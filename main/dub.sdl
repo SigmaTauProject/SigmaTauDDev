@@ -1,0 +1,20 @@
+name "sigma_tau"
+description "Spaceship Bridge Simulator"
+authors "Jonathan Levi"
+copyright "Copyright © 2020, Jonathan Levi"
+license "MIT"
+
+targetPath	"../dist"
+workingDirectory	"../dist"
+preBuildCommands	"rm -r ../dist || true"
+
+dependency "cst" version="~>1.0"
+dependency "tau" version="~>1.0"
+dependency "linear" version="~>1.0.0-beta"
+dependency "geometry" version="~>1.0.0-beta"
+dependency "loopnum" version="~>1.0.0-beta"
+
+dependency "vibe-d"	version="~>0.8"
+dependency "vibe-d:tls"	version="~>0.8"
+subConfiguration "vibe-d:tls" "openssl-1.1"
+// openssl" openssl-1.1" openssl-0.9" botan"
