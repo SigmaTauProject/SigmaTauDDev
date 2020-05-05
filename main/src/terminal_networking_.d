@@ -1,4 +1,4 @@
-module TerminalNetworking;
+module terminal_networking_;
 
 public import vibe.core.core : processEvents, sleep;
 import vibe.http.fileserver : serveStaticFiles, HTTPFileServerSettings;

@@ -13,7 +13,7 @@ import GameTime_;
 import Entity;
 
 import ship_.ship_;
-import TerminalNetworking;
+import terminal_networking_;
 
 import core.time;
 import core.thread;
@@ -45,7 +45,7 @@ void main() {
 		}
 		foreach (entity; canMoveEntities)
 			entity.pos += entity.vel.timedVel(tickTime);
-		TerminalNetworking.sleep(200.msecs);
+		terminal_networking_.sleep(200.msecs);
 		////if (readln()=="q")
 		////	break;
 	}
