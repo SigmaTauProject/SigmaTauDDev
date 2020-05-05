@@ -13,6 +13,7 @@ dependency "tau" version="~>1.0"
 dependency "linear" version="~>1.0.0-beta"
 dependency "geometry" version="~>1.0.0-beta"
 dependency "loopnum" version="~>1.0.0-beta"
+dependency "accessors" version="~>1.2"
 
 dependency "vibe-d"	version="~>0.8"
 dependency "vibe-d:tls"	version="~>0.8"

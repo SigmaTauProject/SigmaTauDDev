@@ -1,6 +1,7 @@
 {
 	"fileVersion": 1,
 	"versions": {
+		"accessors": "1.2.4",
 		"botan": "1.12.18",
 		"botan-math": "1.0.3",
 		"cst": "1.0.4",
