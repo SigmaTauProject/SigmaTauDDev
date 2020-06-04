@@ -16,8 +16,9 @@ struct PortClass(alias Class) {
 
 enum PortType : ubyte {
 	@PortClass!Bridge	bridge	,
-	@PortClass!WirePort	wire	,
-		wireIn	,
+	@PortClass!(WirePort!(WirePortType.wire))	wire	,
+	@PortClass!(WirePort!(WirePortType.wireOut))	wireOut	,
+	@PortClass!(WirePort!(WirePortType.wireIn))	wireIn	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 
