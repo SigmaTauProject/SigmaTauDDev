@@ -15,7 +15,36 @@ enum WirePortType {
 	wire	= wireOut | wireIn	,
 }
 
-template WirePort(WirePortType wirePortType) {
+template WirePort(WirePortType wirePortType, T) {
+	static if (is(T == class) || isPointer!T) {
+		alias TRef = T;
+		alias TStore = T;
+		bool isNull(TStore store) {
+			return store is null;
+		}
+		void nullify(ref TStore store) {
+			store = null;
+		}
+		TRef refify(TStore store) {
+			return store;
+		}
+		T valueify(T store) {
+			return store;
+		}
+	}
+	else {
+		alias TRef = T*;
+		alias TStore = Nullable!T;
+		TRef refify(ref TStore store) {
+			return &store.get();
+		}
+		T valueify(TStore store) {
+			return store.get;
+		}
+		T valueify(TRef store) {
+			return *store;
+		}
+	}
 	class WirePort(bool isMaster) : Port!isMaster {
 		
 		//---Constructors
@@ -25,7 +54,7 @@ template WirePort(WirePortType wirePortType) {
 				this_!(typeof(this));
 			}
 			static if (isMaster)
-			this(float v) {
+			this(T v) {
 				this_!(typeof(this));
 				data = v;
 			}
@@ -33,15 +62,15 @@ template WirePort(WirePortType wirePortType) {
 		
 		//---Private Members
 		private {
-			Nullable!float	data		;// null when not listening or listening is waiting for starting value
+			TStore	data		;// null when not listening or listening is waiting for starting value
 			invariant {static if (!isMaster) assert(!(data.isNull));}
 			
-			static if (!isMaster)	void delegate(float*)[]	listenWaiters	= []	;
-			static if (!isMaster)	void delegate(float)[]	getWaiters	= []	;
+			static if (!isMaster)	void delegate(TRef*)[]	listenWaiters	= []	;
+			static if (!isMaster)	void delegate(T)[]	getWaiters	= []	;
 			
 			static if (!isMaster)	uint	listenRequests	= 0	;
 			static if (true)	Terminal[]	clientListeners	= []	;
-			static if (true)	void delegate(float)[]	selfListeners	= []	;
+			static if (true)	void delegate(T)[]	selfListeners	= []	;
 			invariant {static if (!isMaster) assert(listenRequest >= clientListeners.length + selfListeners.length);}
 			
 			static if (!isMaster)	bool	listening	= false	;
@@ -53,12 +82,12 @@ template WirePort(WirePortType wirePortType) {
 		//---Messages
 		//-Get
 		private
-		void getCore(void delegate(float) callback) {
+		void getCore(void delegate(T) callback) {
 			static if (isMaster) {
-				callback(data.get);
+				callback(data.valueify);
 			}
 			else if (!(data.isNull))
-				callback(data.get);
+				callback(data.valueify);
 			else {
 				if (!(listening || getting)) {
 					get_send!(Trgt.server);
@@ -75,20 +104,20 @@ template WirePort(WirePortType wirePortType) {
 		
 		static if (wirePortType & WirePortType.wireOut || isMaster)
 		public
-		void get(void delegate(float) callback){
+		void get(void delegate(T) callback){
 			getCore(callback);
 		}
 		
 		//-Listen & Unlisten
 		private
-		void listenCore(void delegate(float*) callback, bool onlyCallback=true) {
+		void listenCore(void delegate(TRef) callback, bool onlyCallback=true) {
 			static if (!isMaster)
 				listenRequests++;
 			static if (isMaster) {
-				callback(&data.get());
+				callback(data.refify);
 			}
 			else if (!(data.isNull))
-				callback(&data.get());
+				callback(data.refify);
 			else {
 				if (!(listening)) {
 					listen_send!(Trgt.server);
@@ -123,7 +152,7 @@ template WirePort(WirePortType wirePortType) {
 		void listen(Src src:Src.client)(ConnectionParam!src connection) {
 			assert(!clientListeners.canFind(connection));
 			clientListeners ~= connection;
-			listenCore(v=>set_send!(Trgt.client)([connection], *v), false);
+			listenCore(v=>set_send!(Trgt.client)([connection], v.valueify), false);
 		}
 		@RPC(2)
 		void unlisten(Src src:Src.client)(ConnectionParam!src connection) {
@@ -133,7 +162,7 @@ template WirePort(WirePortType wirePortType) {
 		
 		//-Direct self listen (hold the value, which changes)
 		static if (!isMaster) {
-			void listen(void delegate(float*) callback) {
+			void listenPull(void delegate(TRef) callback) {
 				listenCore(callback);
 			}
 			void listen() {
@@ -146,11 +175,11 @@ template WirePort(WirePortType wirePortType) {
 		
 		//-Change Listen (get callback on every change)
 		static if (wirePortType & WirePortType.wireOut || isMaster) {
-			void listen(void delegate(float) callback) {
+			void listen(void delegate(T) callback) {
 				selfListeners ~= callback;
-				listenCore(v=>callback(*v), false);
+				listenCore(v=>callback(v.valueify), false);
 			}
-			void unlisten(void delegate(float) callback) {
+			void unlisten(void delegate(T) callback) {
 				selfListeners = selfListeners.remove(selfListeners.countUntil(callback));
 				unlistenCore;
 			}
@@ -159,7 +188,7 @@ template WirePort(WirePortType wirePortType) {
 		
 		//-Set
 		@RPC(3)
-		void set(Src src)(float v) if (wirePortType & WirePortType.wireIn || isMaster || src == Src.server) {
+		void set(Src src)(T v) if (wirePortType & WirePortType.wireIn || isMaster || src == Src.server) {
 			selfListeners.each!(l=>l(v));
 			static if (isMaster) {
 				data = v;
@@ -185,7 +214,7 @@ template WirePort(WirePortType wirePortType) {
 					}
 					else {
 						data = v;
-						listenWaiters.each!(c=>c(&data.get()));
+						listenWaiters.each!(c=>c(data.refify));
 						listenWaiters = [];
 					}
 				}

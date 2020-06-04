@@ -16,9 +16,9 @@ struct PortClass(alias Class) {
 
 enum PortType : ubyte {
 	@PortClass!Bridge	bridge	,
-	@PortClass!(WirePort!(WirePortType.wire))	wire	,
-	@PortClass!(WirePort!(WirePortType.wireOut))	wireOut	,
-	@PortClass!(WirePort!(WirePortType.wireIn))	wireIn	,
+	@PortClass!(WirePort!(WirePortType.wire, float))	wire	,
+	@PortClass!(WirePort!(WirePortType.wireOut, float))	wireOut	,
+	@PortClass!(WirePort!(WirePortType.wireIn, float))	wireIn	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 
@@ -46,8 +46,8 @@ class Port(bool isMaster) {
 		// Magic to automatically calculate PortType; using Type and PortClass UDA defined on PortType members.
 		static foreach(type; EnumMembers!PortType) {
 			static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!(TemplateOf!This)).length)
-		this.type = type;
-	}
+				this.type = type;
+		}
 	}
 	
 	auto safeCast(PortType toType)() {
