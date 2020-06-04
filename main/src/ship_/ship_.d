@@ -1,12 +1,14 @@
 module ship_.ship_;
 
 import std.algorithm;
+import std.range;
 import accessors;
 
-import watch_var_;
 import ship_.components_;
-import ship_.ports_;
-import ship_.bridge_;
+import ship_.terminal_;
+import ship_.ports_.port_;
+import ship_.ports_.bridge_;
+import ship_.ports_.wire_out_;
 
 import terminal_networking_;
 
@@ -14,29 +16,31 @@ import terminal_networking_;
 
 class Ship {
 	Hardware hardware;
+	Bridge!true bridge;
 	TerminalConnection[] terminals = [];
 	this () {
 		hardware = new Hardware;
-		hardware.bridge = new Bridge;
+		bridge = new Bridge!true;
 		hardware.thrusters ~= new Thruster;
 		{
-			auto wire = new WireOutPort(0);
+			auto wire = bridge.addPort!(PortType.wireOut)(0);
 			// Listener needs memory managed.
-			wire.value.listen((v){hardware.thrusters[0].thrust = v;});
-			hardware.bridge.addPort(wire);
+			////wire.value.listen((v){hardware.thrusters[0].thrust = v;});
 		}
 	}
 	void update(TerminalConnection[] newTerminals) {
-		newTerminals.each!((t){
-			// ... Send initial msg
-		});
+		bridge.newTerminals(newTerminals);
 		terminals ~= newTerminals;
+		
+		foreach (term; terminals) {
+			foreach (msg; term) {
+				bridge.dispatchClientMsg(term, msg);
+			}
+		}
 	}
 }
 
 class Hardware {
-	Bridge	bridge;
-	
 	Thruster[] thrusters;
 	Radar[] radars;
 }
