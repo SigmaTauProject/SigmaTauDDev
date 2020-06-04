@@ -8,7 +8,7 @@ import ship_.components_;
 import ship_.terminal_;
 import ship_.ports_.port_;
 import ship_.ports_.bridge_;
-import ship_.ports_.wire_out_;
+import ship_.ports_.wire_;
 
 import terminal_networking_;
 
@@ -23,7 +23,7 @@ class Ship {
 		bridge = new Bridge!true;
 		hardware.thrusters ~= new Thruster;
 		{
-			auto wire = bridge.addPort!(PortType.wireOut)(0);
+			auto wire = bridge.addPort!(PortType.wire)(0);
 			// Listener needs memory managed.
 			////wire.value.listen((v){hardware.thrusters[0].thrust = v;});
 		}

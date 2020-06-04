@@ -12,7 +12,7 @@ import ship_.terminal_;
 
 import ship_.ports_.port_;
 import ship_.ports_.bridge_;
-import ship_.ports_.wire_out_;
+import ship_.ports_.wire_;
 
 class Bridge(bool isMaster) : Port!isMaster {
 	private:
@@ -59,8 +59,8 @@ class Bridge(bool isMaster) : Port!isMaster {
 				final switch(type) {
 					case PortType.bridge:
 						assert(false);
-					case PortType.wireOut:
-						port = new WireOutPort!isMaster;
+					case PortType.wire:
+						port = new WirePort!isMaster;
 						break;
 					case PortType.wireIn:
 						assert(false, "Unimplemented");

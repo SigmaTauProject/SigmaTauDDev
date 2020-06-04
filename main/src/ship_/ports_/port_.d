@@ -6,7 +6,7 @@ import std.traits;
 import std.algorithm;
 
 import ship_.ports_.bridge_;
-import ship_.ports_.wire_out_;
+import ship_.ports_.wire_;
 
 public import ship_.terminal_;
 
@@ -16,9 +16,8 @@ struct PortClass(alias Class) {
 
 enum PortType : ubyte {
 	@PortClass!Bridge	bridge	,
-	@PortClass!WireOutPort	wireOut	,
-	wireIn	,
-	radar	,
+	@PortClass!WirePort	wire	,
+		wireIn	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 

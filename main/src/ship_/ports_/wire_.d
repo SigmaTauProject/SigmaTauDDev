@@ -1,4 +1,4 @@
-module ship_.ports_.wire_out_;
+module ship_.ports_.wire_;
 
 import accessors;
 import structuredrpc;
@@ -9,17 +9,17 @@ import std.algorithm;
 import std.range;
 import std.typecons;
 
-class WireOutPort(bool isMaster) : Port!isMaster {
+class WirePort(bool isMaster) : Port!isMaster {
 	
 	//---Constructors
 	public {
 		static if (!isMaster)
 		this() {
-			super(PortType.wireOut);
+			super(PortType.wire);
 		}
 		static if (isMaster)
 		this(float v) {
-			super(PortType.wireOut);
+			super(PortType.wire);
 			data = v;
 		}
 	}
