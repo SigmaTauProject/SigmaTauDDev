@@ -45,6 +45,9 @@ void main() {
 		}
 		foreach (entity; canMoveEntities)
 			entity.pos += entity.vel.timedVel(tickTime);
+		
+		ship.update(terminalServer.getNewTerminals);
+		
 		terminal_networking_.sleep(200.msecs);
 		////if (readln()=="q")
 		////	break;
