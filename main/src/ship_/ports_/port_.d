@@ -7,6 +7,7 @@ import std.algorithm;
 
 import ship_.ports_.bridge_;
 import ship_.ports_.wire_;
+import ship_.ports_.radar_;
 
 public import ship_.terminal_;
 
@@ -19,6 +20,7 @@ enum PortType : ubyte {
 	@PortClass!(WirePort!(WirePortType.wire, float))	wire	,
 	@PortClass!(WirePort!(WirePortType.wireOut, float))	wireOut	,
 	@PortClass!(WirePort!(WirePortType.wireIn, float))	wireIn	,
+	@PortClass!(WirePort!(WirePortType.wireOut, RadarData))	radar	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 

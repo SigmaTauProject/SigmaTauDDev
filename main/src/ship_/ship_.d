@@ -9,6 +9,7 @@ import ship_.terminal_;
 import ship_.ports_.port_;
 import ship_.ports_.bridge_;
 import ship_.ports_.wire_;
+import ship_.ports_.radar_;
 
 import terminal_networking_;
 
@@ -23,6 +24,7 @@ class Ship {
 		bridge = new Bridge!true;
 		hardware.thrusters ~= new Thruster;
 		{
+			auto radar = bridge.addPort!(PortType.radar)(new RadarData([]));
 			auto wire = bridge.addPort!(PortType.wire)(0);
 			// Listener needs memory managed.
 			////wire.value.listen((v){hardware.thrusters[0].thrust = v;});
