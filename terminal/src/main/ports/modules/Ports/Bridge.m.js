@@ -1,5 +1,5 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
-import {WirePort} from "/modules/Ports/WirePort.m.js";
+import {WirePort} from "/modules/Ports/Wire.m.js";
 
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 import Ptr from "/modules/Ptr.m.js";
