@@ -41,8 +41,13 @@ class Port(bool isMaster) {
 	ubyte id;
 	
 	static if (isMaster)
-	this(PortType type) {
+	// this is not a normal constructor because I was having problems calling a templated `super` constructor.
+	void this_(This)() {
+		// Magic to automatically calculate PortType; using Type and PortClass UDA defined on PortType members.
+		static foreach(type; EnumMembers!PortType) {
+			static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!(TemplateOf!This)).length)
 		this.type = type;
+	}
 	}
 	
 	auto safeCast(PortType toType)() {

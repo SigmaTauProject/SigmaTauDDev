@@ -25,7 +25,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 	//---Constructors
 	public
 	this() {
-		super(PortType.bridge);
+		this_!(typeof(this));
 		_ports = [this];
 	}
 	

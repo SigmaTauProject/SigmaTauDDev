@@ -22,11 +22,11 @@ template WirePort(WirePortType wirePortType) {
 		public {
 			static if (!isMaster)
 			this() {
-				super(PortType.wire);
+				this_!(typeof(this));
 			}
 			static if (isMaster)
 			this(float v) {
-				super(PortType.wire);
+				this_!(typeof(this));
 				data = v;
 			}
 		}
