@@ -2,7 +2,7 @@ import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
 import Ptr from "/modules/Ptr.m.js";
 
 export
-class WireOutPort extends Port {
+class WirePort extends Port {
 	
 	//---Constructors
 	constructor() {
@@ -121,5 +121,5 @@ class WireOutPort extends Port {
 	}
 }
 
-portMixin_withRPC(WireOutPort);
+portMixin_withRPC(WirePort);
  
