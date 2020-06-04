@@ -60,12 +60,17 @@ class Bridge(bool isMaster) : Port!isMaster {
 					case PortType.bridge:
 						assert(false);
 					case PortType.wire:
-						port = new WirePort!isMaster;
+						port = addPort!(PortType.wire);
+						break;
+					case PortType.wireOut:
+						port = addPort!(PortType.wireOut);
 						break;
 					case PortType.wireIn:
-						assert(false, "Unimplemented");
+						port = addPort!(PortType.wireIn);
+						break;
 					case PortType.radar:
-						assert(false, "Unimplemented");
+						port = addPort!(PortType.radar);
+						break;
 				}
 				addNewPortToPorts(port);
 			}
