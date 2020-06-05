@@ -39,8 +39,14 @@ class Bridge extends Port {
 		switch(type) {
 			case PortType.bridge:
 				console.assert(false);
+			case PortType.wire:
+				port = new WirePort(); 
+				break;
 			case PortType.wireOut:
-				port = new WirePort();
+				port = new WireOutPort(); 
+				break;
+			case PortType.wireIn:
+				port = new WireInPort(); 
 				break;
 			default:
 				port = new UnknownPort();

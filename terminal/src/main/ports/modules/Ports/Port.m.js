@@ -2,7 +2,7 @@ import {mixinRPC} from "/modules/StructuredRPC.m.js";
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 
 export
-var PortType = {
+const PortType = {
 	bridge	: 0,
 	wire	: 1,
 	wireOut	: 2,
@@ -12,7 +12,7 @@ var PortType = {
 }
 
 export
-var Src = {
+const Src = {
 	server	: 1	,
 	self	: 2	,
 };
