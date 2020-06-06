@@ -1,5 +1,7 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
-import {WirePort} from "/modules/Ports/WirePort.m.js";
+import {WirePort, WireOutPort, WireInPort} from "/modules/Ports/Wire.m.js";
+import {RadarPort} from "/modules/Ports/Radar.m.js";
+import {UnknownPort} from "/modules/Ports/Unknown.m.js";
 
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 import Ptr from "/modules/Ptr.m.js";
@@ -38,13 +40,21 @@ class Bridge extends Port {
 		switch(type) {
 			case PortType.bridge:
 				console.assert(false);
+			case PortType.wire:
+				port = new WirePort(); 
+				break;
 			case PortType.wireOut:
-				port = new WirePort();
+				port = new WireOutPort(); 
 				break;
 			case PortType.wireIn:
-				console.assert(false, "Unimplemented");
+				port = new WireInPort(); 
+				break;
 			case PortType.radar:
-				console.assert(false, "Unimplemented");
+				port = new RadarPort(); 
+				break;
+			default:
+				port = new UnknownPort();
+				break;
 		}
 		this.addNewPortToPorts(port);
 	}

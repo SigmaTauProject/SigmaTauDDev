@@ -7,6 +7,7 @@ import std.algorithm;
 
 import ship_.ports_.bridge_;
 import ship_.ports_.wire_;
+import ship_.ports_.radar_;
 
 public import ship_.terminal_;
 
@@ -16,9 +17,10 @@ struct PortClass(alias Class) {
 
 enum PortType : ubyte {
 	@PortClass!Bridge	bridge	,
-	@PortClass!(WirePort!(WirePortType.wire))	wire	,
-	@PortClass!(WirePort!(WirePortType.wireOut))	wireOut	,
-	@PortClass!(WirePort!(WirePortType.wireIn))	wireIn	,
+	@PortClass!(WirePort!(WirePortType.wire, float))	wire	,
+	@PortClass!(WirePort!(WirePortType.wireOut, float))	wireOut	,
+	@PortClass!(WirePort!(WirePortType.wireIn, float))	wireIn	,
+	@PortClass!(WirePort!(WirePortType.wireOut, RadarData))	radar	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 
@@ -41,8 +43,13 @@ class Port(bool isMaster) {
 	ubyte id;
 	
 	static if (isMaster)
-	this(PortType type) {
-		this.type = type;
+	// this is not a normal constructor because I was having problems calling a templated `super` constructor.
+	void this_(This)() {
+		// Magic to automatically calculate PortType; using Type and PortClass UDA defined on PortType members.
+		static foreach(type; EnumMembers!PortType) {
+			static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!(TemplateOf!This)).length)
+				this.type = type;
+		}
 	}
 	
 	auto safeCast(PortType toType)() {

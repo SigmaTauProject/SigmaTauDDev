@@ -14,7 +14,7 @@ dependency "linear" version="~>1.0.0-beta"
 dependency "geometry" version="~>1.0.0-beta"
 dependency "loopnum" version="~>1.0.0-beta"
 dependency "accessors" version="~>1.2"
-dependency "treeserial" version="~>1.0.0-alpha"
+dependency "treeserial" version="~>1.0.0-alpha.4"
 dependency "structured-rpc" version="~>1.0.0-alpha"
 
 dependency "vibe-d"	version="~>0.8"
