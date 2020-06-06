@@ -38,7 +38,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//-Get
 		get(callback){
-			console.assert(wirePortType & WirePortType.wireIn);
+			console.assert(wirePortType & WirePortType.wireOut);
 			if (this.data != null)
 				callback(this.data.payload);
 			else {
@@ -52,7 +52,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//-Listen & Unlisten
 		listenCore(callback, dataCallback=false) {
-			console.assert(wirePortType & WirePortType.wireIn);
+			console.assert(wirePortType & WirePortType.wireOut);
 			this.listenRequests++;
 			if (!(this.data == null) && callback != null)
 				if (dataCallback)
@@ -71,7 +71,7 @@ function WirePortBase(wirePortType, t) {
 			}
 		}
 		unlistenCore() {
-			console.assert(wirePortType & WirePortType.wireIn);
+			console.assert(wirePortType & WirePortType.wireOut);
 			console.assert(this.listenRequests > 0);
 			this.listenRequests--;
 			if (!this.listenRequests) {
@@ -103,7 +103,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//-Set
 		set(v, src=Src.self) {
-			console.assert(src == Src.server || wirePortType & WirePortType.wireOut);
+			console.assert(src == Src.server || wirePortType & WirePortType.wireIn);
 			this.listeners.forEach(l=>l(v));
 			 if (src != Src.server) 
 				this.set_send(v);
