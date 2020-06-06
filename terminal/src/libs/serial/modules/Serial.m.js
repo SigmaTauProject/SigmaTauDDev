@@ -13,8 +13,10 @@ const SerialType = {
 	float32	: "float32"	,
 	float64	: "float64"	,
 			
-	array	: elementType=>({type:"array", elementType:elementType})	,
-	struct	: "struct"	,
+	array	: (elementType, length=undefined)=>({type:"array", length:length, elementType})	,
+	staticArray	: (elementType, length)=>({type:"array", length:length, elementType})	,
+	struct	: Cls=>({type:"struct", Cls:cls})	,
+	object	: "object"	,
 };
 
 const basicTypes = [
@@ -30,7 +32,7 @@ const basicTypes = [
 	SerialType.float32	,
 	SerialType.float64	,
 ];
-const sizeof = {
+const basicSizeof = {
 	uint8	: 1	,
 	int8	: 1	,
 	uint16	: 2	,
@@ -51,6 +53,7 @@ function NoLength(value=true) {
 	}
 	this.value = value;
 }
+
 export
 function LengthType(value) {
 	if (!(this instanceof LengthType)){
@@ -65,13 +68,7 @@ function LengthType(value) {
 ////	}
 ////	this.value = value;
 ////}
-export
-function ElementAttributes(...values) {
-	if (!(this instanceof ElementAttributes)){
-		return new ElementAttributes(values);
-	}
-	this.value = values;
-}
+
 
 export
 class Serializer {
@@ -87,69 +84,168 @@ class Serializer {
 		return new Serializer(...this.attributes, ...moreAttributes);
 	}
 	
-	serialize(type, value) {
-		if (basicTypes.includes(type)) {
-			let buffer = new Uint8Array(sizeof[type]);
-			let view = new DataView(buffer.buffer);
-			viewSet(view, type, value);
-			return buffer;
-		}
-		else if (typeof(type) == "object" && type.type == "array") {
-			let noLength = this.getAttribute(NoLength);
-			let lengthType = this.getAttribute(LengthType);
-			let dataOffset = noLength?0:sizeof[lengthType];
-			let buffer = new Uint8Array(dataOffset + sizeof[type.elementType]*value.length);
-			let view = new DataView(buffer.buffer);
-			if (!noLength) {
-				viewSet(view, lengthType, value.length);
-				view = new DataView(buffer.buffer, dataOffset);
+	sizeof(type) {
+		if (type.constructor == Array)
+			return subserializer(...type.slice(1)).sizeof(type[0]);
+		
+		if (basicSizeof[type] != undefined)
+			return basicSizeof[type];
+		if (typeof(type) == "object" && type.type == "array") {
+			if (type.length != undefined) {
+				let valueSize = this.sizeof(type.elementType);
+				if (valueSize == undefined)
+					return undefined;
+				return valueSize*type.length;
 			}
+			return undefined;
+		}
+		console.assert(false, "Serialize Type not defined.");
+	}
+	byteSizeof(type, value) {
+		if (type.constructor == Array)
+			return subserializer(...type.slice(1)).byteSizeof(type[0]);
+		
+		{
+			let size = this.sizeof(type);
+			if (size != undefined)
+				return  size;
+		}
+		
+		if (typeof(type) == "object" && type.type == "array") {
+			let lengthSize;
+			if (type.length) {
+				console.assert(value.length == type.length);
+				lengthSize = 0;
+			}
+			else {
+				if (this.getAttribute(NoLength))
+					return undefined;
+				lengthSize = this.byteSizeof(this.getAttribute(LengthType), value.length);
+				if (lengthSize == undefined)
+					return undefined;
+			}
+			
+			let valueSize = this.sizeof(type.elementType);
+			if (valueSize != undefined)
+				return lengthSize + valueSize*value.length;
+			let valuesSize;
 			for (let v of value) {
-				viewSet(view, type.elementType, v);
-				view = new DataView(buffer.buffer, view.byteOffset + sizeof[type.elementType]);
-			}
-			return buffer;
+				let vs = this.byteSizeof(type.elementType, v);
+				if (vs == undefined)
+					return undefined;
+				valuesSize += vs;
+			};
+			return lengthSize + valuesSize;
 		}
-		else console.assert(false, "Serialize Type not defined.");
 	}
 	
-	 deserialize(type, buffer, leftOver_callback=()=>{}) {
-		if (basicTypes.includes(type)) {
-			let view = new DataView(buffer.buffer);
-			leftOver_callback(buffer.slice(sizeof[type]));
-			return viewGet(view, type);
+	serialize(type, value, buffer=undefined) {
+		if (type.constructor == Array)
+			return subserializer(...type.slice(1)).serialize(type[0], value, buffer);
+		
+		if (buffer) console.assert(buffer.byteOffset + buffer.byteLength == buffer.buffer.byteLength, "`buffer` must be at the end of root `ArrayBuffer`.");
+		
+		function defineBuffer(size) {
+			buffer = buffer != undefined && buffer.byteLength >= size
+				? new Uint8Array(buffer.buffer, buffer.byteOffset, size)
+				: new Uint8Array(size);
 		}
-		else if (typeof(type) == "object" && type.type == "array") {
-			let noLength = this.getAttribute(NoLength);
-			let lengthType = this.getAttribute(LengthType);
-			let view = new DataView(buffer.buffer);
-			if (!noLength) {
-				let value = new Array(viewGet(view, lengthType));
-				view = new DataView(buffer.buffer, sizeof[lengthType]);
-				for (let i=0; i<value.length; i++) {
-					value[i] = viewGet(view, type.elementType);
-					view = new DataView(buffer.buffer, view.byteOffset + sizeof[type.elementType]);
+		
+		if (basicTypes.includes(type)) {
+			defineBuffer(basicSizeof[type]);
+			viewSet(dataView(buffer), type, value);
+			return buffer;
+		}
+		if (typeof(type) == "object" && type.type == "array") {
+			let noLength;
+			if (type.length) {
+				console.assert(value.length == type.length);
+				noLength = true;
+			}
+			else {
+				noLength = this.getAttribute(NoLength);
+			}
+			
+			let byteLength = this.byteSizeof(type, value);
+			if (byteLength) {
+				defineBuffer(byteLength);
+				let workingBuffer = buffer;
+				if (!noLength)
+					workingBuffer = this._serializeTo(this.getAttribute(LengthType), value.length, workingBuffer);
+				for (let v of value)
+					workingBuffer = this._serializeTo(type.elementType, v, workingBuffer);
+			}
+			else {
+				let builder = [];
+				if (!noLength)
+					builder.push(this.serialize(this.getAttribute(LengthType), value.length));
+				for (let v of value)
+					builder.push(this.serialize(type.elementType, v));
+				byteLength = builder.sum(b=>b.byteLength);
+				defineBuffer(byteLength);
+				let workingBuffer = buffer;
+				for (let b of builder) {
+					this._copyTo(b, workingBuffer);
 				}
-				leftOver_callback(buffer.slice(sizeof[lengthType] * value.length));
+			}
+			return buffer;
+		}
+		console.assert(false, "Serialize Type not defined.");
+	}
+	
+	_serializeTo(type, value, workingBuffer) {
+		return chopBuffer(workingBuffer, this.serialize(type, value, workingBuffer).byteLength);
+	}
+	_copyTo(valueBuffer, workingBuffer) {
+		workingBuffer.set(valueBuffer, 0);
+		return chopBuffer(workingBuffer, valueBuffer.byteLength);
+	}
+	
+	 deserialize(type, buffer, workingBuffer_callback=()=>{}) {
+		if (type.constructor == Array)
+			return subserializer(...type.slice(1)).deserialize(type[0], buffer, workingBuffer_callback);
+		
+		if (basicTypes.includes(type)) {
+			workingBuffer_callback(chopBuffer(buffer, basicSizeof[type]));
+			return viewGet(dataView(buffer), type);
+		}
+		if (typeof(type) == "object" && type.type == "array") {
+			let length;
+			if (type.length)
+				length = type.length;
+			else if (!this.getAttribute(NoLength))
+				length = this.deserialize(this.getAttribute(LengthType), buffer, wb=>buffer=wb);
+			
+			if (length != undefined) {
+				let value = new Array(length);
+				for (let i=0; i<length; i++)
+					value[i] = this.deserialize(type.elementType, buffer, wb=>buffer=wb);
+				workingBuffer_callback(buffer);
 				return value;
 			}
 			else {
 				let value = [];
-				while (view.byteLength > 0) {
-					value.push(viewGet(view, type.elementType));
-					view = new DataView(buffer.buffer, view.byteOffset + sizeof[type.elementType]);
-				}
+				while (buffer.byteLength > 0)
+					value.push(this.deserialize(type.elementType, buffer, wb=>buffer=wb));
+				workingBuffer_callback(buffer);
 				return value;
 			}
 		}
-		else console.assert(false, "Serialize Type not defined.");
+		console.assert(false, "Serialize Type not defined.");
 	}
+	
 }
 
 let defaultSerializer = new Serializer();
 export var serialize = (...args)=>defaultSerializer.serialize(...args);
 export var deserialize = (...args)=>defaultSerializer.deserialize(...args);
 
+function dataView(buffer) {
+	return new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+}
+function chopBuffer(buffer, bytes) {
+	return new Uint8Array(buffer.buffer, buffer.byteOffset+bytes, buffer.byteLength-bytes);
+}
 // type must be basictype
 function viewSet(view, type, value) {
 	view["set"+type[0].toUpperCase()+type.slice(1)](0, value, true);
