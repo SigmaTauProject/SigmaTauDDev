@@ -16,8 +16,8 @@ enum WirePortType {
 }
 
 template WirePort(WirePortType wirePortType, T) {
+	alias TRef = T*;
 	static if (is(T == class) || isPointer!T) {
-		alias TRef = T;
 		alias TStore = T;
 		bool isNull(TStore store) {
 			return store is null;
@@ -25,15 +25,17 @@ template WirePort(WirePortType wirePortType, T) {
 		void nullify(ref TStore store) {
 			store = null;
 		}
-		TRef refify(TStore store) {
+		TRef refify(ref TStore store) {
+			return &store;
+		}
+		T valueify(TStore store) {
 			return store;
 		}
-		T valueify(T store) {
-			return store;
+		T valueify(TRef store) {
+			return *store;
 		}
 	}
 	else {
-		alias TRef = T*;
 		alias TStore = Nullable!T;
 		TRef refify(ref TStore store) {
 			return &store.get();
