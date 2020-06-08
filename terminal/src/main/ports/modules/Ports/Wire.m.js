@@ -4,8 +4,8 @@ import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js
 
 export 
 const WirePortType = {
-	wireOut	: 1,
-	wireIn	: 2,
+	wireIn	: 1,
+	wireOut	: 2,
 	wire	: 1 | 2,
 }
 export
@@ -14,7 +14,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//---Constructors
 		constructor() {
-			super(PortType.wireOut);
+			super(PortType.wireIn);
 		}
 		
 		//---Private Members
@@ -38,7 +38,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//-Get
 		get(callback){
-			console.assert(wirePortType & WirePortType.wireOut);
+			console.assert(wirePortType & WirePortType.wireIn);
 			if (this.data != null)
 				callback(this.data.payload);
 			else {
@@ -52,7 +52,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//-Listen & Unlisten
 		listenCore(callback, dataCallback=false) {
-			console.assert(wirePortType & WirePortType.wireOut);
+			console.assert(wirePortType & WirePortType.wireIn);
 			this.listenRequests++;
 			if (!(this.data == null) && callback != null)
 				if (dataCallback)
@@ -71,7 +71,7 @@ function WirePortBase(wirePortType, t) {
 			}
 		}
 		unlistenCore() {
-			console.assert(wirePortType & WirePortType.wireOut);
+			console.assert(wirePortType & WirePortType.wireIn);
 			console.assert(this.listenRequests > 0);
 			this.listenRequests--;
 			if (!this.listenRequests) {
@@ -103,7 +103,7 @@ function WirePortBase(wirePortType, t) {
 		
 		//-Set
 		set(v, src=Src.self) {
-			console.assert(src == Src.server || wirePortType & WirePortType.wireIn);
+			console.assert(src == Src.server || wirePortType & WirePortType.wireOut);
 			this.listeners.forEach(l=>l(v));
 			 if (src != Src.server) 
 				this.set_send(v);
@@ -134,6 +134,6 @@ function WirePortBase(wirePortType, t) {
 	}
 }
 export const WirePort = WirePortBase(WirePortType.wire, SerialType.float32);	portMixin_withRPC(WirePort);
-export const WireOutPort = WirePortBase(WirePortType.wireOut, SerialType.float32);	portMixin_withRPC(WireOutPort);
 export const WireInPort = WirePortBase(WirePortType.wireIn, SerialType.float32);	portMixin_withRPC(WireInPort);
+export const WireOutPort = WirePortBase(WirePortType.wireOut, SerialType.float32);	portMixin_withRPC(WireOutPort);
  

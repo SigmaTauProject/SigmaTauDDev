@@ -1,5 +1,5 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
-import {WirePort, WireOutPort, WireInPort} from "/modules/Ports/Wire.m.js";
+import {WirePort, WireInPort, WireOutPort} from "/modules/Ports/Wire.m.js";
 import {RadarPort} from "/modules/Ports/Radar.m.js";
 import {UnknownPort} from "/modules/Ports/Unknown.m.js";
 
@@ -43,11 +43,11 @@ class Bridge extends Port {
 			case PortType.wire:
 				port = new WirePort(); 
 				break;
-			case PortType.wireOut:
-				port = new WireOutPort(); 
-				break;
 			case PortType.wireIn:
 				port = new WireInPort(); 
+				break;
+			case PortType.wireOut:
+				port = new WireOutPort(); 
 				break;
 			case PortType.radar:
 				port = new RadarPort(); 

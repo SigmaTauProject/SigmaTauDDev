@@ -10,9 +10,9 @@ import std.range;
 import std.typecons;
 
 enum WirePortType {
-	wireOut	= 0x1	,
-	wireIn	= 0x2	,
-	wire	= wireOut | wireIn	,
+	wireIn	= 0x1	,
+	wireOut	= 0x2	,
+	wire	= wireIn | wireOut	,
 }
 
 template WirePort(WirePortType wirePortType, T) {
@@ -104,7 +104,7 @@ template WirePort(WirePortType wirePortType, T) {
 			getCore(v=>set_send!(Trgt.client)([connection], v));
 		}
 		
-		static if (wirePortType & WirePortType.wireOut || isMaster)
+		static if (wirePortType & WirePortType.wireIn || isMaster)
 		public
 		void get(void delegate(T) callback){
 			getCore(callback);
@@ -176,7 +176,7 @@ template WirePort(WirePortType wirePortType, T) {
 		}
 		
 		//-Change Listen (get callback on every change)
-		static if (wirePortType & WirePortType.wireOut || isMaster) {
+		static if (wirePortType & WirePortType.wireIn || isMaster) {
 			void listen(void delegate(T) callback) {
 				selfListeners ~= callback;
 				listenCore(v=>callback(v.valueify), false);
@@ -190,7 +190,7 @@ template WirePort(WirePortType wirePortType, T) {
 		
 		//-Set
 		@RPC(3)
-		void set(Src src)(T v) if (wirePortType & WirePortType.wireIn || isMaster || src == Src.server) {
+		void set(Src src)(T v) if (wirePortType & WirePortType.wireOut || isMaster || src == Src.server) {
 			selfListeners.each!(l=>l(v));
 			static if (isMaster) {
 				data = v;

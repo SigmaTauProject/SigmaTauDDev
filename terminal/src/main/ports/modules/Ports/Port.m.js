@@ -5,8 +5,8 @@ export
 const PortType = {
 	bridge	: 0,
 	wire	: 1,
-	wireOut	: 2,
-	wireIn	: 3,
+	wireIn	: 2,
+	wireOut	: 3,
 	radar	: 4,
 	unknown	: -1,
 }
