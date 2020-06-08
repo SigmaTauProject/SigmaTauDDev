@@ -1,15 +1,15 @@
-module ship_.ports_.port_;
+module ports_.port_;
 
 import treeserial;
 import structuredrpc;
 import std.traits;
 import std.algorithm;
 
-import ship_.ports_.bridge_;
-import ship_.ports_.wire_;
-import ship_.ports_.radar_;
+import ports_.bridge_;
+import ports_.wire_;
+import ports_.radar_;
 
-public import ship_.terminal_;
+public import ports_.connection_;
 
 struct PortClass(alias Class) {
 	alias PortClass = Class;
@@ -27,11 +27,11 @@ mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 enum Src : ubyte {
 	server	= 0x1	,
 	self	= 0x2	,
-	@RPCCon!Terminal
+	@RPCCon!Client
 	client	= 0x4	,
 }
 enum Trgt : ubyte {
-	@RPCCon!Terminal
+	@RPCCon!Client
 	client	= 0x1	,
 	self	= 0x2	,
 	server	= 0x4	,
@@ -64,14 +64,14 @@ class Port(bool isMaster) {
 		writeln("sending to server:", id~data);
 		assert(false, "Unimplemented");
 	}
-	void rpcSend(Trgt trgt:Trgt.client)(Terminal[] terminals, const(ubyte)[] data) {
-		terminals.each!(t=>t.send(id~data));
+	void rpcSend(Trgt trgt:Trgt.client)(Client[] clients, const(ubyte)[] data) {
+		clients.each!(t=>t.put(id~data));
 	}
 	
 	abstract
 	void recvServerMsg(const(ubyte)[] msg);
 	abstract
-	void recvClientMsg(Terminal terminal, const(ubyte)[] msg);
+	void recvClientMsg(Client client, const(ubyte)[] msg);
 }
 
 mixin template PortMixin_WithRPC() {
@@ -87,8 +87,8 @@ mixin template PortMixin_WithRPC() {
 		rpcRecv!(Src.server)(msg);
 	}
 	public override
-	void recvClientMsg(Terminal terminal, const(ubyte)[] msg) {
-		rpcRecv!(Src.client)(terminal, msg);
+	void recvClientMsg(Client client, const(ubyte)[] msg) {
+		rpcRecv!(Src.client)(client, msg);
 	}
 }
 
