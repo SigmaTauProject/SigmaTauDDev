@@ -1,4 +1,4 @@
-module GameTime_;
+module world_.game_time_;
 
 struct GameTime {
 	long time;

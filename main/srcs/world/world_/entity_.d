@@ -1,10 +1,10 @@
-module Entity;
+module world_.entity_;
 
 import math.tau;
 
 import math.linear.vector;
 import math.linear.point;
-import GameTime_;
+import world_.game_time_;
 import math.loopnum;
 
 alias Pos = PVec2!long;
@@ -40,6 +40,11 @@ class Entity {
 		this.ori	= ori;
 		this.anv	= anv;
 	}
+}
+
+void writeEntity(Entity e) {
+	import std.stdio;
+	writeln(e.pos,e.vel);
 }
 
 
