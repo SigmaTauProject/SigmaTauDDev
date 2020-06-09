@@ -8,8 +8,6 @@ import std.bitmanip;
 import treeserial;
 import structuredrpc;
 
-import ports_.connection_;
-
 import ports_.port_;
 import ports_.bridge_;
 import ports_.wire_;

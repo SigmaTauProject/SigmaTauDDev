@@ -5,11 +5,10 @@ import std.range;
 import accessors;
 
 import ship_.components_;
-import ship_.terminal_;
-import ship_.ports_.port_;
-import ship_.ports_.bridge_;
-import ship_.ports_.wire_;
-import ship_.ports_.radar_;
+import ports_.port_;
+import ports_.bridge_;
+import ports_.wire_;
+import ports_.radar_;
 
 import terminal_networking_;
 
