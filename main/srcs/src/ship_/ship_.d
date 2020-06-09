@@ -5,15 +5,12 @@ import std.range;
 import accessors;
 
 import ship_.components_;
-import ship_.terminal_;
-import ship_.ports_.port_;
-import ship_.ports_.bridge_;
-import ship_.ports_.wire_;
-import ship_.ports_.radar_;
+import ports_.port_;
+import ports_.bridge_;
+import ports_.wire_;
+import ports_.radar_;
 
-import terminal_networking_;
-
-
+import networking_.terminal_connection_;
 
 class Ship {
 	Hardware hardware;
@@ -31,7 +28,7 @@ class Ship {
 		}
 	}
 	void update(TerminalConnection[] newTerminals) {
-		bridge.newTerminals(newTerminals);
+		bridge.newClients(newTerminals);
 		terminals ~= newTerminals;
 		
 		foreach (term; terminals) {

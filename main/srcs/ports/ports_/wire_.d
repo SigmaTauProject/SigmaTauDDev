@@ -1,8 +1,8 @@
-module ship_.ports_.wire_;
+module ports_.wire_;
 
 import accessors;
 import structuredrpc;
-import ship_.ports_.port_;
+import ports_.port_;
 
 import std.traits;
 import std.algorithm;
@@ -71,7 +71,7 @@ template WirePort(WirePortType wirePortType, T) {
 			static if (!isMaster)	void delegate(T)[]	getWaiters	= []	;
 			
 			static if (!isMaster)	uint	listenRequests	= 0	;
-			static if (true)	Terminal[]	clientListeners	= []	;
+			static if (true)	Client[]	clientListeners	= []	;
 			static if (true)	void delegate(T)[]	selfListeners	= []	;
 			invariant {static if (!isMaster) assert(listenRequest >= clientListeners.length + selfListeners.length);}
 			

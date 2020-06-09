@@ -1,8 +1,8 @@
-module ship_.ports_.radar_;
+module ports_.radar_;
 
 import accessors;
 import structuredrpc;
-import ship_.ports_.port_;
+import ports_.port_;
 
 import std.traits;
 import std.algorithm;

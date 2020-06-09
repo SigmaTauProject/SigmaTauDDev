@@ -1,4 +1,4 @@
-module terminal_networking_;
+module networking_.terminal_networking_;
 
 public import vibe.core.core : processEvents, sleep;
 import vibe.http.fileserver : serveStaticFiles, HTTPFileServerSettings;
@@ -12,13 +12,15 @@ import std.experimental.logger;
 import core.time;
 import core.thread;
 
+import networking_.terminal_connection_;
+
 /**	Be sure either `sleep` or `proccessEvents` are called routienly
 */
 class TerminalServer {
 	this() {
 		void handleWebSocketConnection(scope WebSocket socket) {
 			log("WebSocket connected");
-			auto newTerminal  = new TerminalConnection(socket);
+			auto newTerminal  = new TerminalConnectionImpl(socket);
 			newTerminals ~= newTerminal;
 			while (newTerminal._keepVibeSocketHandlerAlive && socket.connected) {
 				sleep(1_000.msecs);
@@ -61,7 +63,7 @@ class TerminalServer {
 }
 
 
-class TerminalConnection {
+class TerminalConnectionImpl : TerminalConnection {
 	this (WebSocket socket) {
 		this.socket = socket;
 	}
@@ -79,12 +81,11 @@ class TerminalConnection {
 	
 	//---Send
 	public {
-		void send(const(ubyte[]) msg) {
+		void put(const(ubyte[]) msg) {
 			if (connected) {
 				socket.send(msg);
 			}
 		}
-		alias put = send;
 	}
 		
 	//---Receive

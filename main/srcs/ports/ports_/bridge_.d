@@ -1,4 +1,4 @@
-module ship_.ports_.bridge_;
+module ports_.bridge_;
 
 import accessors;
 import std.traits;
@@ -8,11 +8,9 @@ import std.bitmanip;
 import treeserial;
 import structuredrpc;
 
-import ship_.terminal_;
-
-import ship_.ports_.port_;
-import ship_.ports_.bridge_;
-import ship_.ports_.wire_;
+import ports_.port_;
+import ports_.bridge_;
+import ports_.wire_;
 
 class Bridge(bool isMaster) : Port!isMaster {
 	private:
@@ -30,20 +28,20 @@ class Bridge(bool isMaster) : Port!isMaster {
 	}
 	
 	//---Private Members
-	Terminal[] terminals;
+	Client[] clients;
 	
 	//---Bridge Code
 	public
-	void newTerminals(Terminal[] terminals) {
-		if (terminals.length)
-			addPorts_send!(Trgt.client)(terminals, _ports[1..$].map!(p=>p.type).array);
+	void newClients(Client[] clients) {
+		if (clients.length)
+			addPorts_send!(Trgt.client)(clients, _ports[1..$].map!(p=>p.type).array);
 	}
 	public
-	void dispatchClientMsg(Terminal terminal, const(ubyte)[] msgData) {
+	void dispatchClientMsg(Client client, const(ubyte)[] msgData) {
 		// TODO: Possible crash
 		import std.stdio; msgData.writeln;
 		auto portID = msgData.deserialize!ubyte;
-		_ports[portID].recvClientMsg(terminal, msgData);
+		_ports[portID].recvClientMsg(client, msgData);
 	}
 	
 	//---Messages
@@ -87,7 +85,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 			
 			static foreach (ctor; ctorOverloads)
 			auto addPort(Parameters!ctor args) {
-				addPorts_send!(Trgt.client)(terminals, [type]);
+				addPorts_send!(Trgt.client)(clients, [type]);
 				auto port = new P!isMaster(args);
 				addNewPortToPorts(port);
 				return port;

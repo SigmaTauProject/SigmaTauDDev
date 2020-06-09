@@ -6,18 +6,52 @@ license "MIT"
 
 targetPath	"../dist"
 workingDirectory	"../dist"
+sourcePaths	"srcs/src"
+importPaths	"srcs/src"
 preBuildCommands	"rm -r ../dist || true"
+
+subPackage {
+	name	"ports"
+	targetType	"library"
+	targetPath	"../dist"
+	sourcePaths	"srcs/ports"
+	importPaths	"srcs/ports"
+	
+	dependency "sigma_tau:terminal_connection" version="*"
+	
+	dependency "accessors" version="~>1.2"
+	dependency "treeserial" version="~>1.0.0-alpha.4"
+	dependency "structured-rpc" version="~>1.0.0-alpha"
+}
+subPackage {
+	name	"terminal_networking"
+	targetType	"library"
+	targetPath	"../dist"
+	sourcePaths	"srcs/terminal_networking"
+	importPaths	"srcs/terminal_networking"
+	
+	dependency "sigma_tau:terminal_connection" version="*"
+	
+	dependency "vibe-d"	version="~>0.8"
+	dependency "vibe-d:tls"	version="~>0.8"
+	subConfiguration "vibe-d:tls" "openssl-1.1"
+}
+subPackage {
+	name	"terminal_connection"
+	targetType	"library"
+	targetPath	"../dist"
+	sourcePaths	"srcs/terminal_connection"
+	importPaths	"srcs/terminal_connection"
+}
+
+dependency "sigma_tau:ports" version="*"
+dependency "sigma_tau:terminal_networking" version="*"
+dependency "sigma_tau:terminal_connection" version="*"
 
 dependency "cst" version="~>1.0"
 dependency "tau" version="~>1.0"
 dependency "linear" version="~>1.0.0-beta"
 dependency "geometry" version="~>1.0.0-beta"
 dependency "loopnum" version="~>1.0.0-beta"
-dependency "accessors" version="~>1.2"
-dependency "treeserial" version="~>1.0.0-alpha.4"
-dependency "structured-rpc" version="~>1.0.0-alpha"
 
-dependency "vibe-d"	version="~>0.8"
-dependency "vibe-d:tls"	version="~>0.8"
-subConfiguration "vibe-d:tls" "openssl-1.1"
 // openssl" openssl-1.1" openssl-0.9" botan"
