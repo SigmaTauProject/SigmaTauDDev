@@ -10,9 +10,7 @@ import ports_.bridge_;
 import ports_.wire_;
 import ports_.radar_;
 
-import terminal_networking_;
-
-
+import networking_.terminal_connection_;
 
 class Ship {
 	Hardware hardware;
@@ -30,7 +28,7 @@ class Ship {
 		}
 	}
 	void update(TerminalConnection[] newTerminals) {
-		bridge.newTerminals(newTerminals);
+		bridge.newClients(newTerminals);
 		terminals ~= newTerminals;
 		
 		foreach (term; terminals) {

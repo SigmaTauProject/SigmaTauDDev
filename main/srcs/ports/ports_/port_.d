@@ -9,6 +9,8 @@ import ports_.bridge_;
 import ports_.wire_;
 import ports_.radar_;
 
+public import networking_.terminal_connection_: Client = TerminalConnection;
+
 struct PortClass(alias Class) {
 	alias PortClass = Class;
 }
@@ -70,20 +72,6 @@ class Port(bool isMaster) {
 	void recvServerMsg(const(ubyte)[] msg);
 	abstract
 	void recvClientMsg(Client client, const(ubyte)[] msg);
-}
-
-interface Client {
-	//---Send
-	public {
-		void put(const(ubyte[]) msg);
-	}
-		
-	//---Receive
-	public {
-		@property bool empty();
-		@property const(const(ubyte)[]) front();
-		void popFront();
-	}
 }
 
 mixin template PortMixin_WithRPC() {

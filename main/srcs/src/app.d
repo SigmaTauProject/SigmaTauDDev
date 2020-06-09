@@ -13,7 +13,7 @@ import GameTime_;
 import Entity;
 
 import ship_.ship_;
-import terminal_networking_;
+import networking_.terminal_networking_;
 
 import core.time;
 import core.thread;
@@ -48,7 +48,7 @@ void main() {
 		
 		ship.update(terminalServer.getNewTerminals);
 		
-		terminal_networking_.sleep(200.msecs);
+		networking_.terminal_networking_.sleep(200.msecs);
 		////if (readln()=="q")
 		////	break;
 	}
