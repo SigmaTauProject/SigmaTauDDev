@@ -2,7 +2,9 @@ module ports_.radar_;
 
 import accessors;
 import structuredrpc;
+
 import ports_.port_;
+import ports_.wire_;
 
 import std.traits;
 import std.algorithm;
@@ -17,4 +19,6 @@ class RadarData {
 	}
 }
 alias RadarEntity = float[2];
+
+alias RadarPort	= WirePortBase!(WirePortType.wireIn, RadarData)	;
 

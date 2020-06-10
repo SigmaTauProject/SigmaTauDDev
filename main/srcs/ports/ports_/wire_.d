@@ -15,7 +15,7 @@ enum WirePortType {
 	wire	= wireIn | wireOut	,
 }
 
-template WirePort(WirePortType wirePortType, T) {
+template WirePortBase(WirePortType wirePortType, T) {
 	alias TRef = T*;
 	static if (is(T == class) || isPointer!T) {
 		alias TStore = T;
@@ -47,7 +47,7 @@ template WirePort(WirePortType wirePortType, T) {
 			return *store;
 		}
 	}
-	class WirePort(bool isMaster) : Port!isMaster {
+	class WirePortBase(bool isMaster) : Port!isMaster {
 		
 		//---Constructors
 		public {
@@ -131,6 +131,7 @@ template WirePort(WirePortType wirePortType, T) {
 				// else listen callback will be handled via normal method when value is recieved from server
 			}
 		}
+		private
 		void listenCore() {
 			listenCore((d){}, false);
 		}
@@ -236,4 +237,6 @@ template WirePort(WirePortType wirePortType, T) {
 ////		return array;
 ////}
 
- 
+alias WirePort	= WirePortBase!(WirePortType.wire, float)	;
+alias WireInPort	= WirePortBase!(WirePortType.wireIn, float)	; 
+alias WireOutPort	= WirePortBase!(WirePortType.wireOut, float)	;
