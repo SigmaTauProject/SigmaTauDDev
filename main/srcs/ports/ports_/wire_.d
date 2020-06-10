@@ -223,6 +223,7 @@ template WirePortBase(WirePortType wirePortType, T) {
 				}
 				else assert(listenWaiters == []);
 			}
+			set_send!(Trgt.clients)(clientListeners, v);
 		}
 		public mixin(defaultSrcMixin("set","Src.self"));
 		
