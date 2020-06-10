@@ -99,7 +99,7 @@ template WirePortBase(WirePortType wirePortType, T) {
 			}
 		}
 		
-		@RPC(0) private
+		@RPC(0) /**private*/ //private breaks the public version for some reason?!
 		void get(Src src:Src.client)(ConnectionParam!src connection) {
 			getCore(v=>set_send!(Trgt.client)([connection], v));
 		}
@@ -151,7 +151,7 @@ template WirePortBase(WirePortType wirePortType, T) {
 			}
 		}
 		
-		@RPC(1) private
+		@RPC(1) /**private*/ //private breaks the public version for some reason?!
 		void listen(Src src:Src.client)(ConnectionParam!src connection) {
 			assert(!clientListeners.canFind(connection));
 			clientListeners ~= connection;
