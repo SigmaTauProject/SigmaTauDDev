@@ -34,7 +34,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 	public
 	void newClients(Client[] clients) {
 		if (clients.length)
-			addPorts_send!(Trgt.client)(clients, _ports[1..$].map!(p=>p.type).array);
+			addPorts_send!(Trgt.clients)(clients, _ports[1..$].map!(p=>p.type).array);
 	}
 	public
 	void dispatchClientMsg(Client client, const(ubyte)[] msgData) {
@@ -90,7 +90,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 		assert(_ports.length <= typeof(port.id).max);
 		port.id = cast(typeof(port.id)) _ports.length;
 		_ports ~= port;
-		addPorts_send!(Trgt.client)(clients, [port.type]);
+		addPorts_send!(Trgt.clients)(clients, [port.type]);
 	}
 	
 	////@RPC(2)

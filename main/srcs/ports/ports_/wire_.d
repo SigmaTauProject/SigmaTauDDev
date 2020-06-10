@@ -101,7 +101,7 @@ template WirePortBase(WirePortType wirePortType, T) {
 		
 		@RPC(0) /**private*/ //private breaks the public version for some reason?!
 		void get(Src src:Src.client)(ConnectionParam!src connection) {
-			getCore(v=>set_send!(Trgt.client)([connection], v));
+			getCore(v=>set_send!(Trgt.clients)([connection], v));
 		}
 		
 		static if (wirePortType & WirePortType.wireIn || isMaster)
@@ -155,7 +155,7 @@ template WirePortBase(WirePortType wirePortType, T) {
 		void listen(Src src:Src.client)(ConnectionParam!src connection) {
 			assert(!clientListeners.canFind(connection));
 			clientListeners ~= connection;
-			listenCore(v=>set_send!(Trgt.client)([connection], v.valueify), false);
+			listenCore(v=>set_send!(Trgt.clients)([connection], v.valueify), false);
 		}
 		@RPC(2)
 		void unlisten(Src src:Src.client)(ConnectionParam!src connection) {
