@@ -5,6 +5,7 @@ import std.algorithm;
 import std.range;
 
 import world_.world_;
+import world_.entity_;
 
 import ports_.port_;
 import ports_.bridge_;
@@ -68,6 +69,6 @@ class Radar : Component {
 	}
 	
 	override void update() {
-		world.entities.each!();
+		port.set(new RadarData(world.entities.map!(e=>e.pos.vector.castType!float.data).array));
 	}
 }
