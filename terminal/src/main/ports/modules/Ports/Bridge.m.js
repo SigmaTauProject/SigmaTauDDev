@@ -53,7 +53,7 @@ class Bridge extends Port {
 				port = new RadarPort(); 
 				break;
 			default:
-				port = new UnknownPort();
+				port = new UnknownPort(type);
 				break;
 		}
 		this.addNewPortToPorts(port);

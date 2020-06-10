@@ -9,12 +9,12 @@ const WirePortType = {
 	wire	: 1 | 2,
 }
 export
-function WirePortBase(wirePortType, t) {
+function WirePortBase(wirePortType, t, portType) {
 	return class WirePortBase extends Port {
 		
 		//---Constructors
 		constructor() {
-			super(PortType.wireIn);
+			super(portType);
 		}
 		
 		//---Private Members
@@ -133,7 +133,7 @@ function WirePortBase(wirePortType, t) {
 		}
 	}
 }
-export const WirePort = WirePortBase(WirePortType.wire, SerialType.float32);	portMixin_withRPC(WirePort);
-export const WireInPort = WirePortBase(WirePortType.wireIn, SerialType.float32);	portMixin_withRPC(WireInPort);
-export const WireOutPort = WirePortBase(WirePortType.wireOut, SerialType.float32);	portMixin_withRPC(WireOutPort);
+export const WirePort	= WirePortBase(WirePortType.wire	, SerialType.float32, PortType.wire	);	portMixin_withRPC(WirePort);
+export const WireInPort	= WirePortBase(WirePortType.wireIn	, SerialType.float32, PortType.wireIn	);	portMixin_withRPC(WireInPort);
+export const WireOutPort	= WirePortBase(WirePortType.wireOut	, SerialType.float32, PortType.wireOut	);	portMixin_withRPC(WireOutPort);
  
