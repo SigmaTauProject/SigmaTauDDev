@@ -14,5 +14,5 @@ class RadarData {
 	entities;
 }
 
-export const RadarPort = WirePortBase(WirePortType.wireIn, SerialType.object(RadarData));	portMixin_withRPC(RadarPort);
+export const RadarPort = WirePortBase(WirePortType.wireIn, SerialType.object(RadarData), PortType.radar);	portMixin_withRPC(RadarPort);
  

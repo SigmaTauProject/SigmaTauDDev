@@ -17,10 +17,10 @@ struct PortClass(alias Class) {
 
 enum PortType : ubyte {
 	@PortClass!Bridge	bridge	,
-	@PortClass!(WirePort!(WirePortType.wire, float))	wire	,
-	@PortClass!(WirePort!(WirePortType.wireIn, float))	wireIn	,
-	@PortClass!(WirePort!(WirePortType.wireOut, float))	wireOut	,
-	@PortClass!(WirePort!(WirePortType.wireIn, RadarData))	radar	,
+	@PortClass!WirePort	wire	,
+	@PortClass!WireInPort	wireIn	,
+	@PortClass!WireOutPort	wireOut	,
+	@PortClass!RadarPort	radar	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 
@@ -32,7 +32,7 @@ enum Src : ubyte {
 }
 enum Trgt : ubyte {
 	@RPCCon!Client
-	client	= 0x1	,
+	clients	= 0x1	,
 	self	= 0x2	,
 	server	= 0x4	,
 }
@@ -64,7 +64,7 @@ class Port(bool isMaster) {
 		writeln("sending to server:", id~data);
 		assert(false, "Unimplemented");
 	}
-	void rpcSend(Trgt trgt:Trgt.client)(Client[] clients, const(ubyte)[] data) {
+	void rpcSend(Trgt trgt:Trgt.clients)(Client[] clients, const(ubyte)[] data) {
 		clients.each!(t=>t.put(id~data));
 	}
 	

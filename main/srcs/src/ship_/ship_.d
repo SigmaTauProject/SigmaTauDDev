@@ -4,6 +4,8 @@ import std.algorithm;
 import std.range;
 import accessors;
 
+import world_.world_;
+
 import ship_.components_;
 import ports_.port_;
 import ports_.bridge_;
@@ -12,21 +14,22 @@ import ports_.radar_;
 
 import networking_.terminal_connection_;
 
-class Ship {
-	Hardware hardware;
+class Ship : ship_.components_.Ship{
+	Component[] components = [];
 	Bridge!true bridge;
 	TerminalConnection[] terminals = [];
-	this () {
-		hardware = new Hardware;
+	
+	World world;
+	
+	this (World world) {
+		this.world = world;
 		bridge = new Bridge!true;
-		hardware.thrusters ~= new Thruster;
-		{
-			auto radar = bridge.addPort!(PortType.radar)(new RadarData([]));
-			auto wire = bridge.addPort!(PortType.wire)(0);
-			// Listener needs memory managed.
-			////wire.value.listen((v){hardware.thrusters[0].thrust = v;});
-		}
+		
+		installComponent!Radar;
+		installComponent!Thruster;
+		installComponent!Thruster;
 	}
+	
 	void update(TerminalConnection[] newTerminals) {
 		bridge.newClients(newTerminals);
 		terminals ~= newTerminals;
@@ -36,13 +39,17 @@ class Ship {
 				bridge.dispatchClientMsg(term, msg);
 			}
 		}
+		
+		components.each!(c=>c.update);
+	}
+	
+	void installComponent(Component)() {
+		components ~= new Component(world);
+		
+		bridge.plugInPorts(components[$-1].ports);
 	}
 }
 
-class Hardware {
-	Thruster[] thrusters;
-	Radar[] radars;
-}
 
 
  

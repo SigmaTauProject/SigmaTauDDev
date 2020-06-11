@@ -34,7 +34,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 	public
 	void newClients(Client[] clients) {
 		if (clients.length)
-			addPorts_send!(Trgt.client)(clients, _ports[1..$].map!(p=>p.type).array);
+			addPorts_send!(Trgt.clients)(clients, _ports[1..$].map!(p=>p.type).array);
 	}
 	public
 	void dispatchClientMsg(Client client, const(ubyte)[] msgData) {
@@ -46,57 +46,51 @@ class Bridge(bool isMaster) : Port!isMaster {
 	
 	//---Messages
 	@RPC(0)
-	void addPorts(Src src:Src.server)(PortType[] types) if (src != src.client) {
-		types.each!(t=>addPort!src(t));
+	void addPorts(Src src:Src.server)(PortType[] types) {
+		assert(!isMaster);
+		static if (!isMaster)
+			types.each!((PortType t)=>addPort!src(t));
 	}
 	
-	private {
-		void addPort(Src src:Src.server)(PortType type) if (src != src.client) {
-			static if (!isMaster) {
-				Port!isMaster port;
-				final switch(type) {
-					case PortType.bridge:
-						assert(false);
-					case PortType.wire:
-						port = addPort!(PortType.wire);
-						break;
-					case PortType.wireIn:
-						port = addPort!(PortType.wireIn);
-						break;
-					case PortType.wireOut:
-						port = addPort!(PortType.wireOut);
-						break;
-					case PortType.radar:
-						port = addPort!(PortType.radar);
-						break;
-				}
-				addNewPortToPorts(port);
+	private
+	void addPort(Src src:Src.server)(PortType type) {
+		assert(!isMaster);
+		static if (!isMaster) {
+			auto addPort(alias type)() {
+				alias P = getUDAs!(type, PortClass)[0].PortClass;
+				plugInPort(new P!isMaster());
 			}
-			else assert(!isMaster);
-		}
-		
-		static if (isMaster)
-		public
-		template addPort(alias type) {
-			static assert(is(typeof(type) == PortType));
-			
-			alias P = getUDAs!(type, PortClass)[0].PortClass;
-			alias ctorOverloads = __traits(getOverloads, P!isMaster, "__ctor");
-			
-			static foreach (ctor; ctorOverloads)
-			auto addPort(Parameters!ctor args) {
-				addPorts_send!(Trgt.client)(clients, [type]);
-				auto port = new P!isMaster(args);
-				addNewPortToPorts(port);
-				return port;
+			Port!isMaster port;
+			final switch(type) {
+				case PortType.bridge:
+					assert(false);
+				case PortType.wire:
+					port = addPort!(PortType.wire);
+					break;
+				case PortType.wireIn:
+					port = addPort!(PortType.wireIn);
+					break;
+				case PortType.wireOut:
+					port = addPort!(PortType.wireOut);
+					break;
+				case PortType.radar:
+					port = addPort!(PortType.radar);
+					break;
 			}
 		}
-		
-		void addNewPortToPorts(Port!isMaster port) {
-			assert(_ports.length <= typeof(port.id).max);
-			port.id = cast(typeof(port.id)) _ports.length;
-			_ports ~= port;
-		}
+	}
+	
+	//---Bridge Functions
+	public
+	void plugInPorts(Port!isMaster[] port) {
+		port.each!(p=>plugInPort(p));
+	}
+	public
+	void plugInPort(Port!isMaster port) {
+		assert(_ports.length <= typeof(port.id).max);
+		port.id = cast(typeof(port.id)) _ports.length;
+		_ports ~= port;
+		addPorts_send!(Trgt.clients)(clients, [port.type]);
 	}
 	
 	////@RPC(2)

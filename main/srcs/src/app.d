@@ -15,7 +15,7 @@ import core.thread;
 void main() {
 	World world = new World;
 	auto terminalServer = new TerminalServer();
-	auto ship = new Ship();
+	auto ship = new Ship(world);
 	while (true) {
 		world.update;
 		

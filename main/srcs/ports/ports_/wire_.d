@@ -15,7 +15,7 @@ enum WirePortType {
 	wire	= wireIn | wireOut	,
 }
 
-template WirePort(WirePortType wirePortType, T) {
+template WirePortBase(WirePortType wirePortType, T) {
 	alias TRef = T*;
 	static if (is(T == class) || isPointer!T) {
 		alias TStore = T;
@@ -47,7 +47,7 @@ template WirePort(WirePortType wirePortType, T) {
 			return *store;
 		}
 	}
-	class WirePort(bool isMaster) : Port!isMaster {
+	class WirePortBase(bool isMaster) : Port!isMaster {
 		
 		//---Constructors
 		public {
@@ -99,9 +99,9 @@ template WirePort(WirePortType wirePortType, T) {
 			}
 		}
 		
-		@RPC(0) private
+		@RPC(0) /**private*/ //private breaks the public version for some reason?!
 		void get(Src src:Src.client)(ConnectionParam!src connection) {
-			getCore(v=>set_send!(Trgt.client)([connection], v));
+			getCore(v=>set_send!(Trgt.clients)([connection], v));
 		}
 		
 		static if (wirePortType & WirePortType.wireIn || isMaster)
@@ -131,6 +131,7 @@ template WirePort(WirePortType wirePortType, T) {
 				// else listen callback will be handled via normal method when value is recieved from server
 			}
 		}
+		private
 		void listenCore() {
 			listenCore((d){}, false);
 		}
@@ -150,11 +151,11 @@ template WirePort(WirePortType wirePortType, T) {
 			}
 		}
 		
-		@RPC(1) private
+		@RPC(1) /**private*/ //private breaks the public version for some reason?!
 		void listen(Src src:Src.client)(ConnectionParam!src connection) {
 			assert(!clientListeners.canFind(connection));
 			clientListeners ~= connection;
-			listenCore(v=>set_send!(Trgt.client)([connection], v.valueify), false);
+			listenCore(v=>set_send!(Trgt.clients)([connection], v.valueify), false);
 		}
 		@RPC(2)
 		void unlisten(Src src:Src.client)(ConnectionParam!src connection) {
@@ -222,6 +223,7 @@ template WirePort(WirePortType wirePortType, T) {
 				}
 				else assert(listenWaiters == []);
 			}
+			set_send!(Trgt.clients)(clientListeners, v);
 		}
 		public mixin(defaultSrcMixin("set","Src.self"));
 		
@@ -236,4 +238,6 @@ template WirePort(WirePortType wirePortType, T) {
 ////		return array;
 ////}
 
- 
+alias WirePort	= WirePortBase!(WirePortType.wire, float)	;
+alias WireInPort	= WirePortBase!(WirePortType.wireIn, float)	; 
+alias WireOutPort	= WirePortBase!(WirePortType.wireOut, float)	;
