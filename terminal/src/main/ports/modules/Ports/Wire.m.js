@@ -93,6 +93,8 @@ function WirePortBase(wirePortType, t, portType) {
 			if (callback != null)
 				this.listeners.push(callback);
 			this.listenCore(callback);
+			if (callback != null)
+				return {unlisten:()=>this.unlisten(callback)};
 		}
 		unlisten(callback = null) {
 			if (callback != null)
