@@ -16,9 +16,7 @@ class Slider {
 					Div.on("change", ev=>{workingValue = null; wirePort.set(ev.target.value);}),
 				),
 			);
-		let portListener = v => {if (workingValue == null) input.value = v;}
-		wirePort.listen(portListener);
-		this.destroy = ()=>wirePort.unlisten(portListener);
+		({unlisten:this.destroy} = wirePort.listen(v => {if (workingValue == null) input.value = v;}));
 	}
 }
 
