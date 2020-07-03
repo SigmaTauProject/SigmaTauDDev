@@ -44,6 +44,20 @@ subPackage {
 	subConfiguration "vibe-d:tls" "openssl-1.1"
 }
 subPackage {
+	name	"terminal_networking_lighttp"
+	targetType	"library"
+	targetPath	"../dist"
+	sourcePaths	"srcs/terminal_networking_lighttp"
+	importPaths	"srcs/terminal_networking_lighttp"
+	
+	dependency "cst" version="~>1.0"
+	dependency "tau" version="~>1.0"
+	
+	dependency "sigma_tau:terminal_connection" version="*"
+	
+	dependency "lighttp" version="~>1.0"
+}
+subPackage {
 	name	"terminal_networking_vibe"
 	targetType	"library"
 	targetPath	"../dist"

@@ -16,7 +16,9 @@ void main() {
 	World world = new World;
 	auto terminalServer = new TerminalServer();
 	auto ship = new Ship(world);
+	
 	while (true) {
+		terminalServer.update;
 		world.update;
 		
 		ship.update(terminalServer.getNewTerminals);
