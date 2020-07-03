@@ -10,6 +10,7 @@ import ship_.ship_;
 import networking_.terminal_networking_;
 
 import core.time;
+import std.datetime;
 import core.thread;
 
 void main() {
@@ -18,12 +19,12 @@ void main() {
 	auto ship = new Ship(world);
 	
 	while (true) {
+		auto loopStartTime = MonoTime.currTime;
 		terminalServer.update;
 		world.update;
-		
 		ship.update(terminalServer.getNewTerminals);
 		
-		networking_.terminal_networking_.sleep(200.msecs);
+		Thread.sleep(max(0.msecs, 100.msecs - (MonoTime.currTime - loopStartTime)));
 		////if (readln()=="q")
 		////	break;
 	}
