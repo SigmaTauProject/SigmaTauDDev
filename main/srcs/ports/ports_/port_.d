@@ -8,6 +8,7 @@ import std.algorithm;
 import ports_.bridge_;
 import ports_.wire_;
 import ports_.radar_;
+import ports_.spawner_;
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
@@ -21,6 +22,7 @@ enum PortType : ubyte {
 	@PortClass!WireInPort	wireIn	,
 	@PortClass!WireOutPort	wireOut	,
 	@PortClass!RadarPort	radar	,
+	@PortClass!SpawnerPort	spawner	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 

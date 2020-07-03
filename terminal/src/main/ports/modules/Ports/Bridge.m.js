@@ -1,13 +1,16 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
 import {WirePort, WireInPort, WireOutPort} from "/modules/Ports/Wire.m.js";
 import {RadarPort} from "/modules/Ports/Radar.m.js";
+import {SpawnerPort} from "/modules/Ports/Spawner.m.js";
 import {UnknownPort} from "/modules/Ports/Unknown.m.js";
 
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 import Ptr from "/modules/Ptr.m.js";
 
-import {Slider} from "/modules/Widgets/Slider.m.js";
-import {Radar} from "/modules/Widgets/Radar.m.js";
+import {Slider} from "/modules/UI/Slider.m.js";
+import {Radar} from "/modules/UI/Radar.m.js";
+import {RadarView} from "/modules/UI/RadarView.m.js";
+import {RadarSpawner} from "/modules/UI/RadarSpawner.m.js";
 
 export
 class Bridge extends Port {
@@ -55,6 +58,9 @@ class Bridge extends Port {
 			case PortType.radar:
 				port = new RadarPort(); 
 				break;
+			case PortType.spawner:
+				port = new SpawnerPort(); 
+				break;
 			default:
 				port = new UnknownPort(type);
 				break;
@@ -69,8 +75,15 @@ class Bridge extends Port {
 		this.ports.push(port);
 		if (port.type == PortType.wire)
 			document.body.appendChild(new Slider(port).el);
-		else if (port.type == PortType.radar)
-			document.body.appendChild(new Radar(port).el);
+		else if (port.type == PortType.radar) {
+			window.radar = new Radar();
+			radar.el.style.maxHeight = "100vh";
+			new RadarView(radar, port);
+			document.body.appendChild(radar.el);
+		}
+		else if (port.type == PortType.spawner) {
+			new RadarSpawner(window.radar, port);
+		}
 	}
 }
 

@@ -1,89 +1,72 @@
 module networking_.terminal_networking_;
 
-public import vibe.core.core : processEvents, sleep;
-import vibe.http.fileserver : serveStaticFiles, HTTPFileServerSettings;
-import vibe.http.router : URLRouter;
-import vibe.http.server;
-import vibe.http.websockets : WebSocket, handleWebSockets;
+import hunt.http;
+import hunt.io.ByteBuffer;
 
+import std.algorithm;
+import std.range;
 import std.string;
 import std.experimental.logger;
+import std.file;
+import std.path;
 
 import core.time;
-import core.thread;
-
 import networking_.terminal_connection_;
 
 /**	Be sure either `sleep` or `proccessEvents` are called routienly
 */
 class TerminalServer {
+	HttpServer server;
+	
+	TerminalConnection[] newTerminals;
+	
 	this() {
-		void handleWebSocketConnection(scope WebSocket socket) {
-			log("WebSocket connected");
-			auto newTerminal  = new TerminalConnectionImpl(socket);
-			newTerminals ~= newTerminal;
-			while (newTerminal._keepVibeSocketHandlerAlive && socket.connected) {
-				sleep(1_000.msecs);
+		server = HttpServer.builder()
+		.setListener(8080, "0.0.0.0")
+		.websocket("/ws", new class AbstractWebSocketMessageHandler {
+			override void onOpen(WebSocketConnection connection) {
+				auto newTerm = new TerminalConnectionImpl(connection);
+				newTerminals ~= newTerm;
+				terms ~= newTerm;
 			}
-			log("WebSocket disconnected");
-		}
-		void handleMIME(scope HTTPServerRequest req, scope HTTPServerResponse res, ref string physicalPath) {
-			if (physicalPath.endsWith(".mjs")) {
-				res.contentType = "application/javascript";
+			override void onBinary(WebSocketConnection connection, ByteBuffer data) {
+				terms.find!(t=>t.socket==connection)[0].msgs ~= cast(ubyte[]) data.getRemaining;
 			}
-		}
-		void main() {
-			auto settings = new HTTPServerSettings;
-			settings.port = 8080;
-			////settings.bindAddresses = ["::1", "127.0.0.1"];
-			
-			auto router = new URLRouter;
-			/////router.get("/", &handleRequest);
-			
-			router.get("/ws", handleWebSockets(&handleWebSocketConnection));
-			
-			auto fileServerSettings = new HTTPFileServerSettings;
-			fileServerSettings.encodingFileExtension = ["gzip" : ".gz"];
-			fileServerSettings.preWriteCallback = &handleMIME;
-			router.get("/gzip/*", serveStaticFiles("./public/terminal", fileServerSettings));
-			router.get("*", serveStaticFiles("./public/terminal", fileServerSettings));
-			
-			listenHTTP(settings, router);
-			
-			////runApplication();
-		}
-		main();
+		})
+		.setHandler(staticRouter("public/terminal"))
+		.build();
+		
+		server.start();
 	}
-	TerminalConnection[] newTerminals = []; 
-	auto getNewTerminals() {
-		auto toReturn = newTerminals;
-		newTerminals = [];
-		return toReturn;
+	TerminalConnection[] getNewTerminals() {
+		scope(success) newTerminals = [];
+		return newTerminals;
+	}
+	
+	void update() {
 	}
 }
 
+TerminalConnectionImpl[] terms;
+
 
 class TerminalConnectionImpl : TerminalConnection {
-	this (WebSocket socket) {
+	this (WebSocketConnection socket) {
 		this.socket = socket;
 	}
-	private WebSocket socket;
+	
+	WebSocketConnection socket;
+	const(ubyte)[][] msgs = [];
 	
 	@property bool connected() {
-		if (_keepVibeSocketHandlerAlive) {
-			bool c = socket.connected;
-			if (!c) _keepVibeSocketHandlerAlive = false;
-			return c;
-		}
-		return false;
+		return socket.isConnected;
 	}
-	bool _keepVibeSocketHandlerAlive = true; // set to false when we are done, used in `NetworkMaster.this.handleConnection`
 	
 	//---Send
 	public {
 		void put(const(ubyte[]) msg) {
 			if (connected) {
-				socket.send(msg);
+				socket.sendData(cast(byte[]) msg.dup);
 			}
 		}
 	}
@@ -91,34 +74,72 @@ class TerminalConnectionImpl : TerminalConnection {
 	//---Receive
 	public {
 		@property bool empty() {
-			if (current != null)
-				return false;
-			if (connected && socket.dataAvailableForRead) {
-				try {
-					current = socket.receiveBinary();
-				}
-				catch (Throwable e) {
-					e.log;
-					return true;
-				}
-				return false;
-			}
-			return true;
+			return msgs.length == 0;
 		}
-		@property const(const(ubyte)[]) front() {
-			return current;
+		@property const(ubyte)[] front() {
+			return msgs[0];
 		}
 		void popFront() {
-			assert(current!=null, "Empty not checked");
-			current = null;
+			assert(!empty);
+			msgs = msgs[1..$];
 		}
-		private const(ubyte)[] current=null;
 	}
 	
 }
 
 
+void delegate(RoutingContext) staticRouter(string path) {
+	return (RoutingContext context) {
+		string file = context.getURI.toString;
+		if (file[0] == '/')
+			file = file[1..$];
+		auto res = context;
+		
+		file = buildNormalizedPath(path, file);
+		if(file.exists && file.isDir)
+			file = buildNormalizedPath(file,"index.html");
+		if(!file.exists && file.extension is null)
+			file = file.setExtension("html");
+		
+		if (file.startsWith("../") || file.endsWith("/..") || file == "..") {
+			res.setStatus = HttpStatus.NOT_FOUND_404;
+		}
+		else if(file.exists) {
+			if (file.isFile) {
+				if (auto mime = file.extension in mimeTypes)
+					res.getResponse.header("content-type", *mime);
+				res.write = cast(byte[]) read(file);
+			}
+		}
+		else {
+			res.setStatus = HttpStatus.NOT_FOUND_404;
+		}
+		
+		context.end();
+	};
+}
 
+enum string[string] mimeTypes = [
+	// text
+	".html"	: "text/html",
+	".htl"	: "text/html",
+	".js"	: "text/javascript",
+	".css"	: "text/css",
+	".txt"	: "text/plain",
+	
+	// images
+	".png"	: "image/png",
+	".jpeg"	: "image/jpeg",
+	".jpg"	: "image/jpeg",
+	".gif"	: "image/gif",
+	".ico"	: "image/x-icon",
+	".svg"	: "image/svg+xml",
+	
+	// other
+	".json"	: "application/json",
+	".zip"	: "application/zip",
+	".bin"	: "application/octet-stream",
+];
 
 
 
