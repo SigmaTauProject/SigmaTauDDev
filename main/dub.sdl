@@ -39,9 +39,8 @@ subPackage {
 	
 	dependency "sigma_tau:terminal_connection" version="*"
 	
-	dependency "vibe-d"	version="~>0.8"
-	dependency "vibe-d:tls"	version="~>0.8"
-	subConfiguration "vibe-d:tls" "openssl-1.1"
+	dependency "hunt" version="~>1.6"
+	dependency "hunt-http" version="~>0.6"
 }
 subPackage {
 	name	"terminal_networking_lighttp"
