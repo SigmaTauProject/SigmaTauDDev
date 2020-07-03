@@ -8,6 +8,7 @@ const PortType = {
 	wireIn	: 2,
 	wireOut	: 3,
 	radar	: 4,
+	spawner	: 5,
 	unknown	: -1,
 }
 

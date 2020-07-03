@@ -76,6 +76,9 @@ class Bridge(bool isMaster) : Port!isMaster {
 				case PortType.radar:
 					port = addPort!(PortType.radar);
 					break;
+				case PortType.spawner:
+					port = addPort!(PortType.spawner);
+					break;
 			}
 		}
 	}

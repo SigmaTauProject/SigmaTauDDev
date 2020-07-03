@@ -11,6 +11,7 @@ import ports_.port_;
 import ports_.bridge_;
 import ports_.wire_;
 import ports_.radar_;
+import ports_.spawner_;
 
 import networking_.terminal_connection_;
 
@@ -28,6 +29,7 @@ class Ship : ship_.components_.Ship{
 		installComponent!Radar;
 		installComponent!Thruster;
 		installComponent!Thruster;
+		installComponent!Spawner;
 	}
 	
 	void update(TerminalConnection[] newTerminals) {
