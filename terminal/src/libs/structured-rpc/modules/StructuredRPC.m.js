@@ -27,7 +27,6 @@ function mixinRPC(Cls, config={}) {
 		Object.defineProperty(Cls.prototype, rpc+"_send", {value:
 			function(...args) {
 				console.assert(args.length == params.length, "Incorrect number of arguments given, expected: "+params.length+" got: "+args.length+".");
-				console.log(...args);
 				let bytes = config.serializer.serialize(config.idType, id);
 				for (let i=0; i<params.length; i++) {
 					let attributes = i == params.length-1 ? [NoLength()] : [];

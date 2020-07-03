@@ -39,7 +39,6 @@ class Bridge(bool isMaster) : Port!isMaster {
 	public
 	void dispatchClientMsg(Client client, const(ubyte)[] msgData) {
 		// TODO: Possible crash
-		import std.stdio; msgData.writeln;
 		auto portID = msgData.deserialize!ubyte;
 		_ports[portID].recvClientMsg(client, msgData);
 	}

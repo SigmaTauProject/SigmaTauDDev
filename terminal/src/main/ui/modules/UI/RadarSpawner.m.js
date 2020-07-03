@@ -4,7 +4,7 @@ export
 class RadarSpawner {
 	
 	constructor(radar, spawnerPort, {}={}) {
-		radar.background.addEventListener("click",ev=>console.log("view", spawnerPort.set(viewPoint(radar.el,radar.background,ev.clientX,ev.clientY))));
+		radar.background.addEventListener("click",ev=>spawnerPort.set(viewPoint(radar.el,radar.background,ev.clientX,ev.clientY)));
 	}
 	
 	update() {}
