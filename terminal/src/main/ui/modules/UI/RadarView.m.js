@@ -9,10 +9,17 @@ class RadarView {
 		({unlisten:this.destroy} = radarPort.listen(radarData=>{
 			radarData.entities.map((entity, i)=>{
 				if (i >= shipEls.length) {
-					shipEls.push(svg("polygon", "entity", Div.attributes({points:"-0.5,0.5 0,-0.5 0.5,0.5 0,0.25"})));
-					view.appendChild(shipEls[i]);
+					////shipEls.push	([ svg("polygon", "entity", Div.attributes({points:"-0.5,0.5 0,-0.5 0.5,0.5 0,0.25"}))
+					////	,  svg("polygon", "entity", Div.attributes({points:"-0.25,0.25 -0.25,-0.25 0.25,-0.25 0.25,0.25"}))
+					////	]);
+					shipEls.push	([ svg("circle", "entity", Div.attributes({r:"1"}))
+						,  svg("circle", "entity", Div.attributes({r:"1"}))
+						]);
+					view.appendChild(shipEls[i][0]);
+					view.appendChild(shipEls[i][1]);
 				}
-				shipEls[i].setAttribute("transform",`translate(${entity[0]/1500}, ${-entity[1]/1500})`);
+				shipEls[i][0].setAttribute("transform",`translate(${entity.pos[0]}, ${-entity.pos[1]})`);
+				shipEls[i][1].setAttribute("transform",`translate(${(entity.pos[0]+entity.vel[0])}, ${-(entity.pos[1]+entity.vel[1])})`);
 			});
 			if (shipEls.length > radarData.entities.length)
 				console.warn("Unimlemented, reduction in radar entity count");

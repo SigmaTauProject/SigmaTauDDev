@@ -18,7 +18,10 @@ class RadarData {
 		this.entities = entities;
 	}
 }
-alias RadarEntity = float[2];
+struct RadarEntity {
+	float[2] pos;
+	float[2] vel;
+}
 
 alias RadarPort	= WirePortBase!(WirePortType.wireIn, RadarData)	;
 

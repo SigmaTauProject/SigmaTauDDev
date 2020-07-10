@@ -20,5 +20,5 @@ function viewPoint(svg, element, x, y) {
   pt.y = y;
   pt = pt.matrixTransform(element.getScreenCTM().inverse());
 
-  return [pt.x*20*1500, -pt.y*20*1500];
+  return [pt.x*20*1000, -pt.y*20*1000];
 }
