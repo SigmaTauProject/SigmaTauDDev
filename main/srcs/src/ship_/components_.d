@@ -72,7 +72,7 @@ class Radar : Component {
 	}
 	
 	override void update() {
-		port.set(new RadarData(world.entities.map!(e=>e.pos.vector.castType!float.data).array));
+		port.set(new RadarData(world.entities.map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, (e.vel.castType!float / 1000f).data)).array));
 	}
 }
 class Spawner : Component {
