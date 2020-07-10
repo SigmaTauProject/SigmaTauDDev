@@ -278,6 +278,7 @@ class Serializer {
 			let keys = Object.keys(type.Cls).filter(k=>k.startsWith("serial_")).map(k=>k.slice("serial_".length));
 			for (let k of keys)
 				value[k] = this.deserialize(type.Cls["serial_"+k], buffer, wb=>buffer=wb)
+			workingBuffer_callback(buffer);
 			return value;
 		}
 		console.assert(false, "Serialize Type not defined.");
