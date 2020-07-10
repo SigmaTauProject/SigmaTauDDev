@@ -4,12 +4,26 @@ import Ptr from "/modules/Ptr.m.js";
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 
 export
+class RadarEntity {
+	constructor(pos, vel) {
+		this.pos = pos;
+		this.vel = vel;
+	}
+		
+	static serial_pos = SerialType.staticArray(SerialType.float32, 2);
+	static serial_vel = SerialType.staticArray(SerialType.float32, 2);
+	
+	pos;
+	vel;
+}
+
+export
 class RadarData {
 	constructor(entities) {
 		this.entities = entities;
 	}
 	
-	static serial_entities = SerialType.array(SerialType.staticArray(SerialType.float32, 2));
+	static serial_entities = SerialType.array(SerialType.object(RadarEntity));
 	
 	entities;
 }
