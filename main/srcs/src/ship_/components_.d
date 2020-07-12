@@ -85,7 +85,12 @@ class Spawner : Component {
 	this(World world) {
 		super(world);
 		port = new SpawnerPort!true([0,0]);
+		bool ignoreFirst = true;
 		port.listen((float[2] entity) {
+			if (ignoreFirst) {
+				ignoreFirst = false;
+				return;
+			}
 			world.entities ~= new Entity(1000,point(vec(entity).castType!long),vec(-1000,0));
 		});
 	}

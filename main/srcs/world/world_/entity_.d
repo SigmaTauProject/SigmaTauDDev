@@ -27,6 +27,8 @@ class Entity {
 	
 	int radius;
 	
+	float playAhead = 0.0; // The % of the tick position has been updated for (used in the physics loop).
+	
 	this (
 		int	radius	,
 		Pos	pos	= pvec(0L,0),
