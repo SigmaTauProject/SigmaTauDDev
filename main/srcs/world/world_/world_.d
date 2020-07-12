@@ -59,8 +59,8 @@ class World {
 					entities[e].playAhead = col.at;
 					entities[col.o].playAhead = col.at;
 					//---Collision Resolution
-					entities[e].vel = [0,0];
-					entities[col.o].vel = [0,0];
+					entities[e].vel = vec([0,0]);
+					entities[col.o].vel = vec([0,0]);
 					
 					//---Correct Sweep
 					sweep!true(e);
