@@ -25,12 +25,12 @@ class World {
 		
 		void sweep() {
 			foreach (e; 1 .. entities.length) {
-				if (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x)) {
+				if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].radius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].radius) {
 					Entity entity = entities[e];
 					do {
 						entities[e] = entities[e-1];
 						e--;
-					} while (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x));
+					} while (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].radius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].radius);
 					entities[e] = entity;
 				}
 			}
@@ -39,18 +39,18 @@ class World {
 		size_t resort(size_t e) {
 			auto entity = entities[e];
 			size_t o;
-			if (e < entities.length-1 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) > entities[e+1].pos.x + max(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)) {
+			if (e < entities.length-1 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].radius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].radius) {
 				do {
 					entities[e] = entities[e+1];
 					e++;
-				} while (e < entities.length-1 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) > entities[e+1].pos.x + max(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536));
+				} while (e < entities.length-1 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].radius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].radius);
 				entities[e] = entity;
 			}
-			else if (e > 0 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) < entities[e-1].pos.x + max(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536)) {
+			else if (e > 0 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].radius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].radius) {
 				do {
 					entities[e] = entities[e-1];
 					e--;
-				} while (e > 0 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) < entities[e-1].pos.x + max(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536));
+				} while (e > 0 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].radius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].radius);
 				entities[e] = entity;
 			}
 			return e;
