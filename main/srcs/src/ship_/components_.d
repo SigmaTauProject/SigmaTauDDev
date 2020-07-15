@@ -15,19 +15,19 @@ import ports_.wire_;
 import ports_.radar_;
 import ports_.spawner_;
 
-interface Ship {
+abstract class Ship {
+	World world;
 }
 
 enum Ports;
 
 abstract
 class Component {
-	World world;
 	Ship ship;
 	Port!true[] ports;
 	
-	this(World world) {
-		this.world = world;
+	this(Ship ship) {
+		this.ship = ship;
 		_portsInternalInit;
 	}
 	
@@ -51,8 +51,8 @@ class Thruster : Component {
 	
 	mixin ComponentMixin!();
 	
-	this(World world) {
-		super(world);
+	this(Ship ship) {
+		super(ship);
 		port = new WirePort!true(0);
 	}
 	
@@ -66,13 +66,13 @@ class Radar : Component {
 	
 	mixin ComponentMixin!();
 	
-	this(World world) {
-		super(world);
+	this(Ship ship) {
+		super(ship);
 		port = new RadarPort!true(new RadarData([]));
 	}
 	
 	override void update() {
-		port.set(new RadarData(world.entities.map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, (e.vel.castType!float / 1000f).data)).array));
+		port.set(new RadarData(ship.world.entities.map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, (e.vel.castType!float / 1000f).data)).array));
 	}
 }
 class Spawner : Component {
@@ -82,8 +82,8 @@ class Spawner : Component {
 	
 	mixin ComponentMixin!();
 	
-	this(World world) {
-		super(world);
+	this(Ship ship) {
+		super(ship);
 		port = new SpawnerPort!true([0,0]);
 		bool ignoreFirst = true;
 		port.listen((float[2] entity) {
@@ -91,7 +91,7 @@ class Spawner : Component {
 				ignoreFirst = false;
 				return;
 			}
-			world.entities ~= new Entity(1000,point(vec(entity).castType!long),vec(-1000,0));
+			ship.world.entities ~= new Entity(1000,point(vec(entity).castType!long),vec(1000,0));
 		});
 	}
 	

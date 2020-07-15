@@ -20,7 +20,8 @@ class Ship : ship_.components_.Ship{
 	Bridge!true bridge;
 	TerminalConnection[] terminals = [];
 	
-	World world;
+	// Inherited from ship_.components_.Ship
+	//World world;
 	
 	this (World world) {
 		this.world = world;
@@ -46,7 +47,7 @@ class Ship : ship_.components_.Ship{
 	}
 	
 	void installComponent(Component)() {
-		components ~= new Component(world);
+		components ~= new Component(this);
 		
 		bridge.plugInPorts(components[$-1].ports);
 	}
