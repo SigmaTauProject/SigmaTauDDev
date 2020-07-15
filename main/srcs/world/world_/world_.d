@@ -78,8 +78,8 @@ class World {
 				//---
 				if (!anythingHappened) {
 					//---Enact Collision
-					entities[col.o].pos += entities[e].vel * cast(long) ((col.at - entities[e].playAhead) * 65536) / 65536;
-					entities[col.o].pos += entities[col.o].vel * cast(long) ((col.at - entities[col.o].playAhead) * 65536) / 65536;
+					entities[e].pos += entities[e].velTo(col.at);
+					entities[col.o].pos += entities[col.o].velTo(col.at);
 					entities[e].playAhead = col.at;
 					entities[col.o].playAhead = col.at;
 					//---Collision Resolution
@@ -151,6 +151,10 @@ struct Collision {
 	float at;
 }
 
+
+auto velTo(Entity entity, float at) {
+	return entity.vel * cast(long) ((at - entity.playAhead) * 65536) / 65536;
+}
 
 
 
