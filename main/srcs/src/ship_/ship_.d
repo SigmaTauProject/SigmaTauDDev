@@ -5,6 +5,10 @@ import std.range;
 import accessors;
 
 import world_.world_;
+import world_.entity_;
+
+import math.linear.vector;
+import math.linear.point;
 
 import ship_.components_;
 import ports_.port_;
@@ -22,9 +26,12 @@ class Ship : ship_.components_.Ship{
 	
 	// Inherited from ship_.components_.Ship
 	//World world;
+	//Entity entity;
 	
 	this (World world) {
 		this.world = world;
+		entity = new Entity(1000,pvec(0L,0),vec(0,0));
+		world.entities ~= entity;
 		bridge = new Bridge!true;
 		
 		installComponent!Radar;

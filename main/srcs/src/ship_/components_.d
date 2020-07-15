@@ -17,6 +17,7 @@ import ports_.spawner_;
 
 abstract class Ship {
 	World world;
+	Entity entity;
 }
 
 enum Ports;
@@ -57,6 +58,7 @@ class Thruster : Component {
 	}
 	
 	override void update() {
+		ship.entity.applyImpulse(vec(cast(int)(port.get*2000),0));
 	}
 }
 class Radar : Component {
