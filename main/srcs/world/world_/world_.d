@@ -32,8 +32,8 @@ class World {
 						e--;
 					} while (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x));
 					entities[e] = entity;
+				}
 			}
-		}
 		}
 		/// returns new location of e
 		size_t resort(size_t e) {
@@ -56,13 +56,13 @@ class World {
 			return e;
 		}
 		
-		// return is if anything happened/changed
+		/// return is if anything happened/changed
 		bool handleEntity(size_t e, float upTo=1.0) {//TODO: is ct upTo faster?
 			//---Find Collisions
 			Collision*[] collisions = [];
 			foreach (o; e+1 .. entities.length) {
 				auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
-				if (colTime != -1 && colTime < upTo)
+				if (colTime >= 0 && colTime < upTo)
 					collisions ~= new Collision(o, colTime);
 			}
 			
@@ -93,7 +93,7 @@ class World {
 					handleEntity(e, upTo);
 				}
 				else {
-				handleEntity(e, upTo);
+					handleEntity(e, upTo);
 				}
 				return true;
 			}
