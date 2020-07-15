@@ -21,13 +21,37 @@ class World {
 	}
 	
 	void update() {
-		void sweep(bool only=false)(size_t start=0) {
-			foreach (e; start..entities.length-1) {
-				if (entities[e].pos.x + max(0, entities[e].vel.x) > entities[e+1].pos.x + max(0, entities[e+1].vel.x))
-					swap(entities[e], entities[e+1]);
-				else static if (only)
-					break;
+		void sweep() {
+			foreach (e; 1 .. entities.length) {
+				if (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x)) {
+					Entity entity = entities[e];
+					do {
+						entities[e] = entities[e-1];
+						e--;
+					} while (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x));
+					entities[e] = entity;
 			}
+		}
+		}
+		/// returns new location of e
+		size_t resort(size_t e) {
+			auto entity = entities[e];
+			size_t o;
+			if (e < entities.length-1 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) > entities[e+1].pos.x + max(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)) {
+				do {
+					entities[e] = entities[e+1];
+					e++;
+				} while (e < entities.length-1 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) > entities[e+1].pos.x + max(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536));
+				entities[e] = entity;
+			}
+			else if (e > 0 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) < entities[e-1].pos.x + max(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536)) {
+				do {
+					entities[e] = entities[e-1];
+					e--;
+				} while (e > 0 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) < entities[e-1].pos.x + max(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536));
+				entities[e] = entity;
+			}
+			return e;
 		}
 		
 		// return is if anything happened/changed
@@ -62,12 +86,13 @@ class World {
 					entities[e].vel = vec([0,0]);
 					entities[col.o].vel = vec([0,0]);
 					
-					//---Correct Sweep
-					sweep!true(e);
+					//---Correct Sweep && Rehandle entity
+					e = min(e, resort(e), resort(col.o));
+					handleEntity(e, upTo);
 				}
-				
-				//---Rehandle entity at this index (might be a new left-most entity)
+				else {
 				handleEntity(e, upTo);
+				}
 				return true;
 			}
 			return false;
