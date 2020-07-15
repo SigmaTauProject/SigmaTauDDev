@@ -17,10 +17,12 @@ class World {
 	
 	this() {
 		//r/entities = [new Entity(1000,pvec(5000L,0),vec(-1000,0)), new Entity(1000,pvec(0L,10000),vec(0,-2000))];
-		entities = [new Entity(1000,pvec(0L,0),vec(0,0)),];
+		entities = [];
 	}
 	
 	void update() {
+		if (entities.length == 0) return;
+		
 		void sweep() {
 			foreach (e; 1 .. entities.length) {
 				if (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x)) {
