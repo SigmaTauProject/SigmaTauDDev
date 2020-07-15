@@ -17,26 +17,52 @@ class World {
 	
 	this() {
 		//r/entities = [new Entity(1000,pvec(5000L,0),vec(-1000,0)), new Entity(1000,pvec(0L,10000),vec(0,-2000))];
-		entities = [new Entity(1000,pvec(0L,0),vec(0,0)),];
+		entities = [];
 	}
 	
 	void update() {
-		void sweep(bool only=false)(size_t start=0) {
-			foreach (e; start..entities.length-1) {
-				if (entities[e].pos.x + max(0, entities[e].vel.x) > entities[e+1].pos.x + max(0, entities[e+1].vel.x))
-					swap(entities[e], entities[e+1]);
-				else static if (only)
-					break;
+		if (entities.length == 0) return;
+		
+		void sweep() {
+			foreach (e; 1 .. entities.length) {
+				if (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x)) {
+					Entity entity = entities[e];
+					do {
+						entities[e] = entities[e-1];
+						e--;
+					} while (e > 0 && entities[e].pos.x + max(0, entities[e].vel.x) < entities[e-1].pos.x + max(0, entities[e-1].vel.x));
+					entities[e] = entity;
+				}
 			}
 		}
+		/// returns new location of e
+		size_t resort(size_t e) {
+			auto entity = entities[e];
+			size_t o;
+			if (e < entities.length-1 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) > entities[e+1].pos.x + max(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)) {
+				do {
+					entities[e] = entities[e+1];
+					e++;
+				} while (e < entities.length-1 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) > entities[e+1].pos.x + max(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536));
+				entities[e] = entity;
+			}
+			else if (e > 0 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) < entities[e-1].pos.x + max(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536)) {
+				do {
+					entities[e] = entities[e-1];
+					e--;
+				} while (e > 0 && entities[e].pos.x + max(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536) < entities[e-1].pos.x + max(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536));
+				entities[e] = entity;
+			}
+			return e;
+		}
 		
-		// return is if anything happened/changed
+		/// return is if anything happened/changed
 		bool handleEntity(size_t e, float upTo=1.0) {//TODO: is ct upTo faster?
 			//---Find Collisions
 			Collision*[] collisions = [];
 			foreach (o; e+1 .. entities.length) {
 				auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
-				if (colTime != -1 && colTime < upTo)
+				if (colTime >= 0 && colTime < upTo)
 					collisions ~= new Collision(o, colTime);
 			}
 			
@@ -54,20 +80,21 @@ class World {
 				//---
 				if (!anythingHappened) {
 					//---Enact Collision
-					entities[col.o].pos += entities[e].vel * cast(long) ((col.at - entities[e].playAhead) * 65536) / 65536;
-					entities[col.o].pos += entities[col.o].vel * cast(long) ((col.at - entities[col.o].playAhead) * 65536) / 65536;
+					entities[e].pos += entities[e].velTo(col.at);
+					entities[col.o].pos += entities[col.o].velTo(col.at);
 					entities[e].playAhead = col.at;
 					entities[col.o].playAhead = col.at;
 					//---Collision Resolution
 					entities[e].vel = vec([0,0]);
 					entities[col.o].vel = vec([0,0]);
 					
-					//---Correct Sweep
-					sweep!true(e);
+					//---Correct Sweep && Rehandle entity
+					e = min(e, resort(e), resort(col.o));
+					handleEntity(e, upTo);
 				}
-				
-				//---Rehandle entity at this index (might be a new left-most entity)
-				handleEntity(e, upTo);
+				else {
+					handleEntity(e, upTo);
+				}
 				return true;
 			}
 			return false;
@@ -94,10 +121,11 @@ class World {
 }
 
 float collisionTime(Entity a, Entity b) {
-	return collisionTime((a.pos.vector - b.pos.vector).castType!float, (b.vel - a.vel).castType!float, cast(float) a.radius + b.radius);
+	float playAhead = max(a.playAhead, b.playAhead);
+	return collisionTime(((a.pos.vector - a.velTo(playAhead)) - (b.pos.vector - a.velTo(playAhead))).castType!float, (b.vel - a.vel).castType!float, cast(float) a.radius + b.radius, playAhead);
 }
 
-float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r) {
+float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r, float playAhead=0) {
 	auto perp(T)(Vec!(T,2) v) {
 		return Vec2!T(v.y, -v.x);
 	}
@@ -115,7 +143,7 @@ float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r) {
 	else
 		ans = y - sqrt(pow(r, 2) - pow(x, 2));
 	ans /= vel.magnitude;
-	if (ans >= 1 || ans < 0)
+	if (ans >= 1 || ans < playAhead)
 		return -1;
 	assert(!ans.isNaN);
 	return ans;
@@ -126,6 +154,10 @@ struct Collision {
 	float at;
 }
 
+
+auto velTo(Entity entity, float at) {
+	return entity.vel * cast(long) ((at - entity.playAhead) * 65536) / 65536;
+}
 
 
 
