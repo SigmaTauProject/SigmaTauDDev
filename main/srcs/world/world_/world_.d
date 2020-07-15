@@ -119,10 +119,11 @@ class World {
 }
 
 float collisionTime(Entity a, Entity b) {
-	return collisionTime((a.pos.vector - b.pos.vector).castType!float, (b.vel - a.vel).castType!float, cast(float) a.radius + b.radius);
+	float playAhead = max(a.playAhead, b.playAhead);
+	return collisionTime(((a.pos.vector - a.velTo(playAhead)) - (b.pos.vector - a.velTo(playAhead))).castType!float, (b.vel - a.vel).castType!float, cast(float) a.radius + b.radius, playAhead);
 }
 
-float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r) {
+float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r, float playAhead=0) {
 	auto perp(T)(Vec!(T,2) v) {
 		return Vec2!T(v.y, -v.x);
 	}
@@ -140,7 +141,7 @@ float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r) {
 	else
 		ans = y - sqrt(pow(r, 2) - pow(x, 2));
 	ans /= vel.magnitude;
-	if (ans >= 1 || ans < 0)
+	if (ans >= 1 || ans < playAhead)
 		return -1;
 	assert(!ans.isNaN);
 	return ans;
