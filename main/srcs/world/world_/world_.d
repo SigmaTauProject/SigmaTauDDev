@@ -63,13 +63,13 @@ class World {
 			{
 				auto until = entities[e].pos.x + max(0, entities[e].vel.x) + entities[e].radius;
 				bool broke = false;
-			foreach (o; e+1 .. entities.length) {
+				foreach (o; e+1 .. entities.length) {
 					if (until < entities[o].pos.x + min(0, entities[o].vel.x) - entities[o].radius)
 						break;
-				auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
-				if (colTime >= 0 && colTime < upTo)
-					collisions ~= new Collision(o, colTime);
-			}
+					auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
+					if (colTime >= 0 && colTime < upTo)
+						collisions ~= new Collision(o, colTime);
+				}
 			}
 			
 			//---Handle Collision
@@ -80,8 +80,14 @@ class World {
 				
 				//---Handle Any Earlier Collision Of Other Entities
 				bool anythingHappened = false;
-				foreach (i; e+1 .. col.o+1)
-					anythingHappened = anythingHappened || handleEntity(i, col.at);
+				{
+					auto until = entities[col.o].pos.x + max(0, entities[col.o].vel.x) + entities[col.o].radius;
+					foreach (i; e+1 .. entities.length) {
+						if (until < entities[i].pos.x + min(0, entities[i].vel.x) - entities[i].radius)
+							break;
+						anythingHappened = anythingHappened || handleEntity(i, col.at);
+					}
+				}
 				
 				//---
 				if (!anythingHappened) {
