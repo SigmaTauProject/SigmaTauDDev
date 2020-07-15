@@ -19,7 +19,7 @@
 		"libasync": "0.8.6",
 		"libevent": "2.0.2+2.0.16",
 		"lighttp": "1.0.0",
-		"linear": "1.0.0-beta.2",
+		"linear": "1.0.0-beta.3",
 		"loopnum": "1.0.0-beta.1",
 		"memutils": "1.0.4",
 		"mir-linux-kernel": "1.0.1",
