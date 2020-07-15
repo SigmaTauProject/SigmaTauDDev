@@ -60,10 +60,16 @@ class World {
 		bool handleEntity(size_t e, float upTo=1.0) {//TODO: is ct upTo faster?
 			//---Find Collisions
 			Collision*[] collisions = [];
+			{
+				auto until = entities[e].pos.x + max(0, entities[e].vel.x) + entities[e].radius;
+				bool broke = false;
 			foreach (o; e+1 .. entities.length) {
+					if (until < entities[o].pos.x + min(0, entities[o].vel.x) - entities[o].radius)
+						break;
 				auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
 				if (colTime >= 0 && colTime < upTo)
 					collisions ~= new Collision(o, colTime);
+			}
 			}
 			
 			//---Handle Collision
