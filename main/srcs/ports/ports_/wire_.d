@@ -109,6 +109,11 @@ template WirePortBase(WirePortType wirePortType, T) {
 		void get(void delegate(T) callback){
 			getCore(callback);
 		}
+		static if (wirePortType & WirePortType.wireIn && isMaster)
+		public
+		T get(){
+			return data.valueify;
+		}
 		
 		//-Listen & Unlisten
 		private
