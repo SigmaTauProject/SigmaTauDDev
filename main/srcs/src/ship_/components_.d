@@ -58,7 +58,7 @@ class Thruster : Component {
 	}
 	
 	override void update() {
-		ship.entity.applyImpulse(vec(cast(int)(port.get*2000),0));
+		ship.entity.applyImpulse(vec(0, port.get*2000));
 	}
 }
 class Radar : Component {
