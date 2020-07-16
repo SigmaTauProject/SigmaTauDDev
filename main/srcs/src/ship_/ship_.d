@@ -30,7 +30,7 @@ class Ship : ship_.components_.Ship{
 	
 	this (World world) {
 		this.world = world;
-		entity = new Entity(1000,pvec(0L,0),vec(0,0));
+		entity = new Entity(1000,pvec(0L,0),vec(0,0), 16384*3);
 		world.entities ~= entity;
 		bridge = new Bridge!true;
 		
