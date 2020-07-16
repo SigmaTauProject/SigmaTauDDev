@@ -20,6 +20,7 @@ class RadarData {
 }
 struct RadarEntity {
 	float[2] pos;
+	ushort ori;
 	float[2] vel;
 }
 

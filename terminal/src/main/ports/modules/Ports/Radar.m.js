@@ -11,9 +11,11 @@ class RadarEntity {
 	}
 		
 	static serial_pos = SerialType.staticArray(SerialType.float32, 2);
+	static serial_ori = SerialType.uint16;
 	static serial_vel = SerialType.staticArray(SerialType.float32, 2);
 	
 	pos;
+	ori;
 	vel;
 }
 
