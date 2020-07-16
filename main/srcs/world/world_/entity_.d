@@ -74,8 +74,8 @@ struct EntityView {
 	void pos(PVec2!float v) {
 		entity.pos = point(v.vector.rotate(- root.ori.toRadians).castType!long + root.pos.vector);
 	}
-	void vel(PVec2!float v) {
-		entity.vel = v.vector.rotate(- root.ori.toRadians).castType!int + root.vel;
+	void vel(Vec2!float v) {
+		entity.vel = v.rotate(- root.ori.toRadians).castType!int + root.vel;
 	}
 	void ori(ushort v) {
 		entity.ori = cast(ushort)(v + root.ori);
@@ -98,13 +98,13 @@ void writeEntity(Entity e) {
 }
 
 
-void applyImpulse(EntityView entity, Vec2!float impulse) {
-	entity.vel += impulse / entity.mass;
+void applyImpulse(Entity entity, Vec2!float impulse) {
+	entity.vel += (impulse / entity.mass).rotate(- entity.ori.toRadians).castType!int;
 }
-void applyImpulse(EntityView entity, float impulse) {
-	entity.entity.applyImpulse(impulse.fromRadians);
+void applyImpulse(Entity entity, float impulse) {
+	entity.applyImpulse(impulse.fromRadians);
 }
-void applyImpulse(EntityView entity, Vec2!float impulse, PVec2!float pos) {
+void applyImpulse(Entity entity, Vec2!float impulse, PVec2!float pos) {
 	entity.applyImpulse(impulse);
 	entity.applyImpulse(cross(pos.vector, impulse));
 }
