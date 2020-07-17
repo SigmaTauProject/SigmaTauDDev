@@ -45,7 +45,8 @@ template ComponentMixin() {
 	}
 }
 
-class Thruster : Component {
+abstract
+class ThrusterBase : Component {
 	@Ports struct {
 		WirePort!true port;
 	}
@@ -56,9 +57,20 @@ class Thruster : Component {
 		super(ship);
 		port = new WirePort!true(0);
 	}
+}
+class DirectThruster : ThrusterBase {
+	bool ori;
+	
+	this(Ship ship, bool ori) {
+		super(ship);
+		this.ori = ori;
+	}
 	
 	override void update() {
-		ship.entity.applyImpulse(vec(0, port.get*2000));
+		if (ori)
+			ship.entity.applyImpulse(port.get*20000*65536);
+		else
+			ship.entity.applyImpulse(vec(0, -port.get*2000*65536));
 	}
 }
 class Radar : Component {

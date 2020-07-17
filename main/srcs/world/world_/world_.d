@@ -115,6 +115,7 @@ class World {
 		void finishEntity(size_t e) {
 			entities[e].pos += entities[e].vel * cast(long) ((1 - entities[e].playAhead) * 65536) / 65536;
 			entities[e].playAhead = 1;
+			entities[e].ori += entities[e].anv;
 		}
 		
 		//---Sweep

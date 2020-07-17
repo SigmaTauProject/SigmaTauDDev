@@ -13,6 +13,12 @@ alias Vel = Vec2!int;
 alias Ori = ushort;
 alias Anv = int;
 
+alias PosRel = PVec2!float;
+alias VelRel = Vec2!float;
+
+alias Imp = Vec2!float;
+alias Ani = float;
+
 Vec2!long timedVel(Vel vel, GameDuration dur) {
 	return vel.castType!long * (dur.duration);
 }
@@ -26,8 +32,8 @@ class Entity {
 	Ori	ori	;
 	Anv	anv	;
 	
-	int	mass	;
-	int	inertia	;
+	float	mass	;
+	float	inertia	;
 	
 	int radius;
 	
@@ -45,7 +51,9 @@ class Entity {
 		this.vel	= vel;
 		this.ori	= ori;
 		this.anv	= anv;
-		this.mass	= cast(int) (cast(float) radius * radius * PI) / 35536;
+		auto r2 = cast(float) radius * radius;
+		this.mass	= r2 * PI;
+		this.inertia	= mass * r2 / 2;
 	}
 }
 
@@ -83,10 +91,10 @@ struct EntityView {
 }
 
 float toRadians(Ori a) {
-	return cast(float) a  * (TAU / 65536);
+	return cast(float) a * (TAU / 65536);
 }
 float toRadians(Anv a) {
-	return cast(float) a  * (TAU / 65536);
+	return cast(float) a * (TAU / 65536);
 }
 Anv fromRadians(float a) {
 	return cast(Anv) ((a * 65536) / TAU);
@@ -98,26 +106,15 @@ void writeEntity(Entity e) {
 }
 
 
-void applyImpulse(Entity entity, Vec2!float impulse) {
-	entity.vel += (impulse / entity.mass).rotate(- entity.ori.toRadians).castType!int;
+void applyImpulse(Entity entity, Imp impulse) {
+	entity.vel += (impulse / entity.mass).rotate(entity.ori.toRadians).castType!int;
 }
-void applyImpulse(Entity entity, float impulse) {
-	entity.applyImpulse(impulse.fromRadians);
+void applyImpulse(Entity entity, Ani impulse) {
+	entity.anv += (impulse / entity.inertia).fromRadians;
 }
-void applyImpulse(Entity entity, Vec2!float impulse, PVec2!float pos) {
+void applyImpulse(Entity entity, Imp impulse, PosRel pos) {
 	entity.applyImpulse(impulse);
 	entity.applyImpulse(cross(pos.vector, impulse));
-}
-
-void applyImpulse(EntityView entity, Anv impulse) {
-	entity.anv += impulse / entity.inertia;
-}
-
-void applyImpulse(Entity entity, Vel impulse) {
-	entity.vel += impulse / entity.mass;
-}
-void applyImpulse(Entity entity, Anv impulse) {
-	entity.anv += impulse /entity.inertia;
 }
 
 
