@@ -35,8 +35,8 @@ class Ship : ship_.components_.Ship{
 		bridge = new Bridge!true;
 		
 		installComponent!Radar;
-		installComponent!Thruster;
-		installComponent!Thruster;
+		installComponent!DirectThruster(false);
+		installComponent!DirectThruster(true);
 		installComponent!Spawner;
 	}
 	
@@ -58,9 +58,9 @@ class Ship : ship_.components_.Ship{
 		static foreach(ctor; __traits(getOverloads, Component, "__ctor"))
 		void installComponent(Parameters!ctor[1..$] args) {
 			components ~= new Component(this, args);
-		bridge.plugInPorts(components[$-1].ports);
+			bridge.plugInPorts(components[$-1].ports);
+		}
 	}
-}
 }
 
 
