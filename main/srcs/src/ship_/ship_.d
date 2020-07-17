@@ -53,11 +53,14 @@ class Ship : ship_.components_.Ship{
 		components.each!(c=>c.update);
 	}
 	
-	void installComponent(Component)() {
-		components ~= new Component(this);
-		
+	template installComponent(Component) {
+		import std.traits;
+		static foreach(ctor; __traits(getOverloads, Component, "__ctor"))
+		void installComponent(Parameters!ctor[1..$] args) {
+			components ~= new Component(this, args);
 		bridge.plugInPorts(components[$-1].ports);
 	}
+}
 }
 
 
