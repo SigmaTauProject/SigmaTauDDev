@@ -20,30 +20,52 @@ struct EntityView {
 	alias entity this;
 	
 	RelPos pos() {
-		return (entity.pos - root.pos).castType!float.rotate(root.ori.toRadians).point;
+		return entity.pos.relPos(root);
 	}
 	RelVel vel() {
-		return (entity.vel - root.vel).castType!float.rotate(root.ori.toRadians);
+		return entity.vel.relVel(root);
 	}
 	Ori ori() {
-		return cast(ushort)(entity.ori - root.ori);
+		return entity.ori.relOri(root);
 	}
-	float rOri() {
+	Radians rOri() {
 		return ori.toRadians;
 	}
-	float rAnv() {
+	Radians rAnv() {
 		return anv.toRadians;
 	}
 	
-	void pos(RelPos v) {
-		entity.pos = point(v.vector.rotate(root.ori.toRadians).castType!long + root.pos.vector);
+	void pos(RelPos pos) {
+		entity.pos = pos.posRel(root);
 	}
-	void vel(RelVel v) {
-		entity.vel = v.rotate(root.ori.toRadians).castType!int + root.vel;
+	void vel(RelVel vel) {
+		entity.vel = vel.velRel(root);
 	}
 	void ori(ushort v) {
-		entity.ori = cast(ushort)(v + root.ori);
+		entity.ori = ori.oriRel(root);
 	}
+}
+
+
+RelPos relPos(WorldPos pos, Entity root) {
+	return (pos - root.pos).castType!float.rotate(- root.ori.toRadians).point;
+}
+WorldPos posRel(RelPos pos, Entity root) {
+	return point(pos.vector.rotate(root.ori.toRadians).castType!long + root.pos.vector);
+}
+
+RelVel relVel(WorldVel vel, Entity root) {
+	return (vel - root.vel).castType!float.rotate(- root.ori.toRadians);
+}
+WorldVel velRel(RelVel vel, Entity root) {
+	return vel.rotate(root.ori.toRadians).castType!int + root.vel;
+}
+
+Ori relOri(Ori ori, Entity root) {
+	return cast(ushort)(ori - root.ori);
+}
+Ori oriRel(Ori ori, Entity root) {
+	return cast(ushort)(ori + root.ori);
 }
 
 
