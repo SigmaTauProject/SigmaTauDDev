@@ -99,7 +99,7 @@ class Radar : Component {
 	}
 	
 	override void update() {
-		port.set(new RadarData(ship.world.entities.map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, e.ori, (e.vel.castType!float / 1000f).data)).array));
+		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, e.ori, (e.vel.castType!float / 1000f).data)).array));
 	}
 }
 class Spawner : Component {
@@ -118,7 +118,7 @@ class Spawner : Component {
 				ignoreFirst = false;
 				return;
 			}
-			ship.world.entities ~= new Entity(1000,point(vec(entity).castType!long),vec(0,1000), 16384);
+			ship.world.entities ~= new Entity(1000, entity.vec.point.posRel(ship.entity), vec(0,1000f).velRel(ship.entity), 16384.oriRel(ship.entity));
 		});
 	}
 	
