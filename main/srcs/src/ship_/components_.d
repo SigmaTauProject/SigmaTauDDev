@@ -6,6 +6,7 @@ import std.range;
 
 import world_.world_;
 import world_.entity_;
+import world_.entity_object_;
 import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
@@ -75,13 +76,13 @@ class DirectThruster : ThrusterBase {
 	override void update() {
 		final switch (type) {
 			case Type.fore:
-				ship.entity.applyImpulseCentered(vec(port.get*2000*65536, 0));
+				ship.entity.applyImpulseCentered(vec(port.get*2000, 0));
 				break;
 			case Type.side:
-				ship.entity.applyImpulseCentered(vec(0, port.get*2000*65536));
+				ship.entity.applyImpulseCentered(vec(0, port.get*1000));
 				break;
 			case Type.rot:
-				ship.entity.applyImpulseAngular(port.get*100000*65536);
+				ship.entity.applyImpulseAngular(port.get/25);
 				break;
 		}
 	}
@@ -118,7 +119,7 @@ class Spawner : Component {
 				ignoreFirst = false;
 				return;
 			}
-			ship.world.entities ~= new Entity(1000, entity.vec.point.posRel(ship.entity), vec(0,1000f).velRel(ship.entity), 16384.oriRel(ship.entity));
+			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1000f).velRel(ship.entity), 16384.oriRel(ship.entity));
 		});
 	}
 	

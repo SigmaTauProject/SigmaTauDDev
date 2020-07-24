@@ -70,10 +70,10 @@ Ori oriRel(Ori ori, Entity root) {
 
 
 void applyImpulseCentered(Entity entity, Imp impulse) {
-	entity.vel += (impulse / entity.mass).rotate(entity.ori.toRadians).castType!int;
+	entity.vel += (impulse / entity.object.mass).rotate(entity.ori.toRadians).castType!int;
 }
 void applyImpulseAngular(Entity entity, Ani impulse) {
-	entity.anv += (impulse / entity.inertia).anvFromRadians;
+	entity.anv += (impulse / entity.object.inertia).anvFromRadians;
 }
 void applyImpulse(Entity entity, Imp impulse, RelPos pos) {
 	entity.applyImpulseCentered(impulse);

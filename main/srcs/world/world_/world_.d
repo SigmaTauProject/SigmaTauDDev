@@ -22,12 +22,12 @@ class World {
 		
 		void sweep() {
 			foreach (e; 1 .. entities.length) {
-				if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].radius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].radius) {
+				if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius) {
 					Entity entity = entities[e];
 					do {
 						entities[e] = entities[e-1];
 						e--;
-					} while (e > 0 && entity.pos.x + min(0, entity.vel.x) - entity.radius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].radius);
+					} while (e > 0 && entity.pos.x + min(0, entity.vel.x) - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius);
 					entities[e] = entity;
 				}
 			}
@@ -36,18 +36,18 @@ class World {
 		size_t resort(size_t e) {
 			auto entity = entities[e];
 			size_t o;
-			if (e < entities.length-1 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].radius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].radius) {
+			if (e < entities.length-1 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].object.broadRadius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].object.broadRadius) {
 				do {
 					entities[e] = entities[e+1];
 					e++;
-				} while (e < entities.length-1 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.radius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].radius);
+				} while (e < entities.length-1 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.object.broadRadius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].object.broadRadius);
 				entities[e] = entity;
 			}
-			else if (e > 0 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].radius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].radius) {
+			else if (e > 0 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].object.broadRadius) {
 				do {
 					entities[e] = entities[e-1];
 					e--;
-				} while (e > 0 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.radius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].radius);
+				} while (e > 0 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.object.broadRadius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].object.broadRadius);
 				entities[e] = entity;
 			}
 			return e;
@@ -58,10 +58,10 @@ class World {
 			//---Find Collisions
 			Collision*[] collisions = [];
 			{
-				auto until = entities[e].pos.x + max(0, entities[e].vel.x) + entities[e].radius;
+				auto until = entities[e].pos.x + max(0, entities[e].vel.x) + entities[e].object.broadRadius;
 				bool broke = false;
 				foreach (o; e+1 .. entities.length) {
-					if (until < entities[o].pos.x + min(0, entities[o].vel.x) - entities[o].radius)
+					if (until < entities[o].pos.x + min(0, entities[o].vel.x) - entities[o].object.broadRadius)
 						break;
 					auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
 					if (colTime >= 0 && colTime < upTo)
@@ -78,9 +78,9 @@ class World {
 				//---Handle Any Earlier Collision Of Other Entities
 				bool anythingHappened = false;
 				{
-					auto until = entities[col.o].pos.x + max(0, entities[col.o].vel.x) + entities[col.o].radius;
+					auto until = entities[col.o].pos.x + max(0, entities[col.o].vel.x) + entities[col.o].object.broadRadius;
 					foreach (i; e+1 .. entities.length) {
-						if (until < entities[i].pos.x + min(0, entities[i].vel.x) - entities[i].radius)
+						if (until < entities[i].pos.x + min(0, entities[i].vel.x) - entities[i].object.broadRadius)
 							break;
 						anythingHappened = anythingHappened || handleEntity(i, col.at);
 					}
@@ -132,7 +132,7 @@ class World {
 
 float collisionTime(Entity a, Entity b) {
 	float playAhead = max(a.playAhead, b.playAhead);
-	return collisionTime(((a.pos.vector - a.velTo(playAhead)) - (b.pos.vector - a.velTo(playAhead))).castType!float, (b.vel - a.vel).castType!float, cast(float) a.radius + b.radius, playAhead);
+	return collisionTime(((a.pos.vector - a.velTo(playAhead)) - (b.pos.vector - a.velTo(playAhead))).castType!float, (b.vel - a.vel).castType!float, cast(float) a.object.broadRadius + b.object.broadRadius, playAhead);
 }
 
 float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r, float playAhead=0) {
