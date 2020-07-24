@@ -60,7 +60,7 @@ function WirePortBase(wirePortType, t, portType) {
 				else
 					callback(this.data.payload);
 			else {
-				if (!(this.istening)) {
+				if (!(this.listening)) {
 					this.listen_send();
 					this.listening = true;
 				}
@@ -85,7 +85,7 @@ function WirePortBase(wirePortType, t, portType) {
 		
 		//-Direct self listen (hold the value, which changes)
 		pullListen(callback) {
-			this.listenCore(callback);
+			this.listenCore(callback, true);
 		}
 		
 		//-Change Listen (get callback on every change)

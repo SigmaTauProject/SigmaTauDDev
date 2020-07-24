@@ -11,6 +11,19 @@ import {Slider} from "/modules/UI/Slider.m.js";
 import {Radar} from "/modules/UI/Radar.m.js";
 import {RadarView} from "/modules/UI/RadarView.m.js";
 import {RadarSpawner} from "/modules/UI/RadarSpawner.m.js";
+import {WireKeys} from "/modules/UI/Keys.m.js";
+
+
+////var wirePortKeys = [
+////	port=>new WireKeys(port, "KeyN", {negKey:"KeyH",}),
+////	port=>new WireKeys(port, "KeyE", {negKey:"Comma",}),
+////	port=>new WireKeys(port, "KeyR", {negKey:"KeyW",}),
+////];
+var wirePortKeys = [
+	port=>new WireKeys(port, "KeyN", {negKey:"KeyH",}),
+	port=>new WireKeys(port, "KeyE", {negKey:"Comma", step:1}),
+	port=>new WireKeys(port, "KeyR", {negKey:"KeyW",}),
+];
 
 export
 class Bridge extends Port {
@@ -73,8 +86,11 @@ class Bridge extends Port {
 		port.id = this.ports.length;
 		port.server = this.server;
 		this.ports.push(port);
-		if (port.type == PortType.wire)
+		if (port.type == PortType.wire) {
 			document.body.appendChild(new Slider(port).el);
+			if (wirePortKeys.length)
+				wirePortKeys.splice(0,1)[0](port);
+		}
 		else if (port.type == PortType.radar) {
 			window.radar = new Radar();
 			radar.el.style.maxHeight = "100vh";

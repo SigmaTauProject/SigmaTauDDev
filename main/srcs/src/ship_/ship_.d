@@ -30,13 +30,14 @@ class Ship : ship_.components_.Ship{
 	
 	this (World world) {
 		this.world = world;
-		entity = new Entity(1000,pvec(0L,0),vec(0,0), 16384*3);
+		entity = new Entity(1000,pvec(0L,0),vec(0,0), 16384*0);
 		world.entities ~= entity;
 		bridge = new Bridge!true;
 		
 		installComponent!Radar;
-		installComponent!DirectThruster(false);
-		installComponent!DirectThruster(true);
+		installComponent!DirectThruster(DirectThruster.Type.fore);
+		installComponent!DirectThruster(DirectThruster.Type.rot);
+		installComponent!DirectThruster(DirectThruster.Type.side);
 		installComponent!Spawner;
 	}
 	

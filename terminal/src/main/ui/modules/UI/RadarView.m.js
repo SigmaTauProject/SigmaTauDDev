@@ -21,9 +21,9 @@ class RadarView {
 					view.appendChild(shipEls[i][1]);
 					view.appendChild(shipEls[i][2]);
 				}
-				shipEls[i][0].setAttribute("transform",`translate(${entity.pos[0]}, ${-entity.pos[1]}) rotate(${entity.ori * (360 / 65536)})`);
-				shipEls[i][1].setAttribute("transform",`translate(${entity.pos[0]}, ${-entity.pos[1]})`);
-				shipEls[i][2].setAttribute("transform",`translate(${(entity.pos[0]+entity.vel[0])}, ${-(entity.pos[1]+entity.vel[1])})`);
+				shipEls[i][0].setAttribute("transform",`translate(${entity.pos[1]}, ${-entity.pos[0]}) rotate(${entity.ori * (360 / 65536)})`);
+				shipEls[i][1].setAttribute("transform",`translate(${entity.pos[1]}, ${-entity.pos[0]})`);
+				shipEls[i][2].setAttribute("transform",`translate(${(entity.pos[1]+entity.vel[1])}, ${-(entity.pos[0]+entity.vel[0])})`);
 			});
 			if (shipEls.length > radarData.entities.length)
 				console.warn("Unimlemented, reduction in radar entity count");

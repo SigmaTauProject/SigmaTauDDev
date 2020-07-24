@@ -4,7 +4,6 @@ import std.math;
 import std.algorithm;
 
 import world_.entity_;
-import world_.game_time_;
 
 import math.linear.vector;
 import math.linear.point;
@@ -12,8 +11,6 @@ import math.geometry.line;
 
 class World {
 	Entity[] entities;
-	
-	GameDur tickTime = gameDur!"msecs"(1);
 	
 	this() {
 		//r/entities = [new Entity(1000,pvec(5000L,0),vec(-1000,0)), new Entity(1000,pvec(0L,10000),vec(0,-2000))];
