@@ -4,7 +4,7 @@ import accessors;
 import structuredrpc;
 
 import ports_.port_;
-import ports_.wire_;
+import ports_.bases_.wire_in_;
 
 import std.traits;
 import std.algorithm;
@@ -24,5 +24,5 @@ struct RadarEntity {
 	float[2] vel;
 }
 
-alias RadarPort	= WirePortBase!(WirePortType.wireIn, RadarData)	;
+alias RadarPort	= WireInPortBase!RadarData	;
 
