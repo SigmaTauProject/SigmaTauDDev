@@ -34,7 +34,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 	public
 	void newClients(Client[] clients) {
 		if (clients.length)
-			addPorts_send!(Trgt.clients)(clients, _ports[1..$].map!(p=>p.type).array);
+			addPorts_send!TrgtClient(clients, _ports[1..$].map!(p=>p.type).array);
 	}
 	public
 	void dispatchClientMsg(Client client, const(ubyte)[] msgData) {
@@ -44,41 +44,25 @@ class Bridge(bool isMaster) : Port!isMaster {
 	}
 	
 	//---Messages
-	@RPC(0)
-	void addPorts(Src src:Src.server)(PortType[] types) {
-		assert(!isMaster);
-		static if (!isMaster)
-			types.each!((PortType t)=>addPort!src(t));
+	static if (!isMaster)
+	@RPC!SrcServer(0)
+	void addPorts(PortType[] types) {
+		types.each!((PortType t)=>addPort(t));
 	}
 	
 	private
-	void addPort(Src src:Src.server)(PortType type) {
-		assert(!isMaster);
-		static if (!isMaster) {
-			auto addPort(alias type)() {
-				alias P = getUDAs!(type, PortClass)[0].PortClass;
-				plugInPort(new P!isMaster());
-			}
-			Port!isMaster port;
-			final switch(type) {
-				case PortType.bridge:
-					assert(false);
-				case PortType.wire:
-					port = addPort!(PortType.wire);
-					break;
-				case PortType.wireIn:
-					port = addPort!(PortType.wireIn);
-					break;
-				case PortType.wireOut:
-					port = addPort!(PortType.wireOut);
-					break;
-				case PortType.radar:
-					port = addPort!(PortType.radar);
-					break;
-				case PortType.spawner:
-					port = addPort!(PortType.spawner);
-					break;
-			}
+	static if (!isMaster)
+	void addPort(PortType type) {
+		auto addPort(alias type)() {
+			alias P = getUDAs!(type, PortClass)[0].PortClass;
+			plugInPort(new P!isMaster());
+		}
+		final switch(type) {
+			case PortType.bridge:
+				assert(false);
+			case PortType.wire:
+				addPort!(PortType.wire);
+				break;
 		}
 	}
 	
@@ -92,7 +76,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 		assert(_ports.length <= typeof(port.id).max);
 		port.id = cast(typeof(port.id)) _ports.length;
 		_ports ~= port;
-		addPorts_send!(Trgt.clients)(clients, [port.type]);
+		addPorts_send!TrgtClient(clients, [port.type]);
 	}
 	
 	////@RPC(2)
@@ -102,7 +86,7 @@ class Bridge(bool isMaster) : Port!isMaster {
 	////}
 	////public mixin(defaultSrcMixin("removePort","Src.self"));
 	
-	mixin PortMixin_WithRPC PortMixin;
+	mixin PortMixin_WithRPC;
 }
 
 

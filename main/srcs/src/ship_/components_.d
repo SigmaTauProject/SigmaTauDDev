@@ -14,8 +14,6 @@ import math.linear.point;
 import ports_.port_;
 import ports_.bridge_;
 import ports_.wire_;
-import ports_.radar_;
-import ports_.spawner_;
 
 abstract class Ship {
 	World world;
@@ -85,44 +83,5 @@ class DirectThruster : ThrusterBase {
 				ship.entity.applyImpulseAngular(port.get/25);
 				break;
 		}
-	}
-}
-class Radar : Component {
-	@Ports struct {
-		RadarPort!true port;
-	}
-	
-	mixin ComponentMixin!();
-	
-	this(Ship ship) {
-		super(ship);
-		port = new RadarPort!true(new RadarData([]));
-	}
-	
-	override void update() {
-		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, e.ori, (e.vel.castType!float / 1000f).data)).array));
-	}
-}
-class Spawner : Component {
-	@Ports struct {
-		SpawnerPort!true port;
-	}
-	
-	mixin ComponentMixin!();
-	
-	this(Ship ship) {
-		super(ship);
-		port = new SpawnerPort!true([0,0]);
-		bool ignoreFirst = true;
-		port.listen((float[2] entity) {
-			if (ignoreFirst) {
-				ignoreFirst = false;
-				return;
-			}
-			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1000f).velRel(ship.entity), 16384.oriRel(ship.entity));
-		});
-	}
-	
-	override void update() {
 	}
 }

@@ -25,7 +25,7 @@ subPackage {
 	
 	dependency "accessors" version="~>1.2"
 	dependency "treeserial" version="~>1.0.0-alpha.4"
-	dependency "structured-rpc" version="~>1.0.0-alpha"
+	dependency "structured-rpc" version="~>2.0.0-alpha"
 }
 subPackage {
 	name	"terminal_networking"
