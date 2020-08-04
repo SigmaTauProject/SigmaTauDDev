@@ -4,7 +4,7 @@ mixin template Accessable(T) {
 	alias TRef = T*;
 	static if (is(T == class) || isPointer!T) {
 		alias TStore = T;
-		bool isNull(TStore store) {
+		bool isNull(const TStore store) {
 			return store is null;
 		}
 		void nullify(ref TStore store) {

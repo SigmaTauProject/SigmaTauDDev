@@ -7,6 +7,8 @@ import std.algorithm;
 
 import ports_.bridge_;
 import ports_.wire_;
+import ports_.radar_;
+import ports_.spawner_;
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
@@ -17,6 +19,10 @@ struct PortClass(alias Class) {
 enum PortType : ubyte {
 	@PortClass!Bridge	bridge	,
 	@PortClass!WirePort	wire	,
+	@PortClass!WireInPort	wireIn	,
+	@PortClass!WireOutPort	wireOut	,
+	@PortClass!RadarPort	radar	,
+	@PortClass!SpawnerPort	spawner	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 enum enumMemberUDAFixMixin(string enumName) = q{

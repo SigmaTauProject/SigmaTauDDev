@@ -16,6 +16,8 @@ import ship_.components_;
 import ports_.port_;
 import ports_.bridge_;
 import ports_.wire_;
+import ports_.radar_;
+import ports_.spawner_;
 
 import networking_.terminal_connection_;
 
@@ -34,9 +36,11 @@ class Ship : ship_.components_.Ship{
 		world.entities ~= entity;
 		bridge = new Bridge!true;
 		
+		installComponent!Radar;
 		installComponent!DirectThruster(DirectThruster.Type.fore);
 		installComponent!DirectThruster(DirectThruster.Type.rot);
 		installComponent!DirectThruster(DirectThruster.Type.side);
+		installComponent!Spawner;
 	}
 	
 	void update(TerminalConnection[] newTerminals) {

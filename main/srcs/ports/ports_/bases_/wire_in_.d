@@ -1,4 +1,4 @@
-module ports_.bases_.wire_;
+module ports_.bases_.wire_in_;
 
 import accessors;
 import structuredrpc;
@@ -13,9 +13,9 @@ import ports_.bases_._accessable_;
 import ports_.bases_._gettable_;
 import ports_.bases_._listenable_;
 
-template WirePortBase(T) {
+template WireInPortBase(T) {
 	mixin Accessable!T;
-	class WirePortBase(bool isMaster) : Port!isMaster {
+	class WireInPortBase(bool isMaster) : Port!isMaster {
 		//---Constructors
 		public {
 			static if (!isMaster)
@@ -103,7 +103,6 @@ template WirePortBase(T) {
 		
 		//-Setting
 		@RPC!SrcServer(3)
-		@RPC!SrcClient(3)
 		void set(Src)(T v) {
 			data = v;
 			static if(!isMaster) {
