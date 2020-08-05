@@ -1,6 +1,6 @@
 
 export
-function gettableMixin(Cls, doGet, onGet, rpcID) {
+function gettableMixin(Cls, doGet, onGet) {
 	Object.defineProperty(Cls.prototype, "get", {value:
 		function(callback) {
 			if (this.getWaiters == undefined)

@@ -83,7 +83,7 @@ function WirePortBase(T, portType) {
 	}
 	
 	portMixin_withRPC(WirePortBase);
-	gettableMixin(WirePortBase, "doSend", "onGet", 0);
+	gettableMixin(WirePortBase, "doSend", "onGet");
 	listenableMixin(WirePortBase, "doSend", "doPullListen", "onListen", "onUnlisten");
 	
 	return WirePortBase;
