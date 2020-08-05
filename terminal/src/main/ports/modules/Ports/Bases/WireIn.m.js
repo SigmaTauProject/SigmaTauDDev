@@ -67,16 +67,12 @@ function WireInPortBase(T, portType) {
 			else
 				this.data = new Ptr(v);
 			
-			 if (src != Src.server) 
-				this.set_send(v);
-			else
-				this.dataComing = false;
+			 this.dataComing = false;
 			
-			 if (src == Src.server) 
-				this.onGetReady();
+			this.onGetReady();
 			this.listenerCall("doSend");
-			if (src == Src.server) 
-				this.onListenReady();
+			this.onListenReady();
+			
 			if (!this.numListeners)
 				this.data = null;
 		}

@@ -105,16 +105,12 @@ template WireInPortBase(T) {
 		@RPC!SrcServer(3)
 		void set(Src)(T v) {
 			data = v;
-			static if(!isMaster) {
-				static if (!is(Src == SrcServer))
-					set_send!TrgtServer(v);
-				else
-					dataComing = false;
-			}
-			static if (is(Src == SrcServer) && !isMaster)
+			static if(!isMaster)
+				dataComing = false;
+			static if (!isMaster)
 				onGetReady;
 			listenerCall!"doSend";
-			static if (is(Src == SrcServer) && !isMaster)
+			static if (!isMaster)
 				onListenReady;
 			static if (!isMaster) if (!listeners)
 				data.nullify;
