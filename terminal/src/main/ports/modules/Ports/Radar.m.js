@@ -13,10 +13,14 @@ class RadarEntity {
 	static serial_pos = SerialType.staticArray(SerialType.float32, 2);
 	static serial_ori = SerialType.uint16;
 	static serial_vel = SerialType.staticArray(SerialType.float32, 2);
+	static serial_radius = SerialType.float32;
+	static serial_shape = SerialType.array(SerialType.staticArray(SerialType.float32, 2));
 	
 	pos;
 	ori;
 	vel;
+	radius;
+	shape;
 }
 
 export

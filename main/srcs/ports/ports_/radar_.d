@@ -22,6 +22,8 @@ struct RadarEntity {
 	float[2] pos;
 	ushort ori;
 	float[2] vel;
+	float radius;
+	float[2][] shape;
 }
 
 alias RadarPort	= WireInPortBase!RadarData	;

@@ -100,7 +100,7 @@ class Radar : Component {
 	}
 	
 	override void update() {
-		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array));
+		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data, e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array));
 	}
 }
 class Spawner : Component {

@@ -199,7 +199,7 @@ class Serializer {
 				if (!noLength)
 					builder.push(this.serialize(this.getAttribute(LengthType), value.length));
 				for (let v of value)
-					builder.push(this.serialize(type.elementType, v));
+					builder.push(this.subserializer(NoLength(false)).serialize(type.elementType, v));
 				byteLength = builder.sum(b=>b.byteLength);
 				defineBuffer(byteLength);
 				let workingBuffer = buffer;
@@ -268,7 +268,7 @@ class Serializer {
 			else {
 				let value = [];
 				while (buffer.byteLength > 0)
-					value.push(this.deserialize(type.elementType, buffer, wb=>buffer=wb));
+					value.push(this.subserializer(NoLength(false)).deserialize(type.elementType, buffer, wb=>buffer=wb));
 				workingBuffer_callback(buffer);
 				return value;
 			}

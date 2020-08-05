@@ -9,9 +9,9 @@ class RadarView {
 		({unlisten:this.destroy} = radarPort.listen(radarData=>{
 			radarData.entities.map((entity, i)=>{
 				if (i >= shipEls.length) {
-					shipEls.push	([ svg("polygon", "entity", Div.attributes({points:"-0.7,0.7 0,-1 0.7,0.7 0,0.25"}))
-						, svg("circle", "entity", Div.attributes({r:"1", stroke:"black", "stroke-width":"0.05", fill:"none",}))
-						, svg("circle", "entity", Div.attributes({r:"1", stroke:"black", "stroke-width":"0.05", fill:"none",}))
+					shipEls.push	([ svg("polygon", "entity", Div.attributes({points:entity.shape.map(p=>p[0]+","+p[1]).join(" ")}))
+						, svg("circle", "entity", Div.attributes({r:entity.radius, stroke:"black", "stroke-width":"0.05", fill:"none",}))
+						, svg("circle", "entity", Div.attributes({r:entity.radius, stroke:"black", "stroke-width":"0.05", fill:"none",}))
 						////, svg("polygon", "entity", Div.attributes({points:"-0.25,0.25 -0.25,-0.25 0.25,-0.25 0.25,0.25"}))
 						]);
 					////shipEls.push	([ svg("circle", "entity", Div.attributes({r:"1"}))
