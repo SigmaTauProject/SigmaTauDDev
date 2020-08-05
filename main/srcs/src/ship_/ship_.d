@@ -33,7 +33,7 @@ class Ship : ship_.components_.Ship{
 	this (World world) {
 		this.world = world;
 		entity = new Entity(fineShipObject,pvec(0L,0),vec(0,0), 16384*0);
-		world.entities ~= entity;
+		world.addEntity(entity);
 		bridge = new Bridge!true;
 		
 		installComponent!Radar;

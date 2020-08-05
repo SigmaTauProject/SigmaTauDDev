@@ -93,15 +93,22 @@ class Radar : Component {
 		RadarPort!true port;
 	}
 	
+	Entity[] entities;
+	
 	mixin ComponentMixin!();
 	
 	this(Ship ship) {
 		super(ship);
-		port = new RadarPort!true(new RadarData([]));
+		port = new RadarPort!true;
+		update;
 	}
 	
 	override void update() {
-		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data, e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array));
+		entities ~= ship.world.newEntities;
+		port.update(
+			ship.world.newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array,
+			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array
+		);
 	}
 }
 class Spawner : Component {
@@ -115,7 +122,7 @@ class Spawner : Component {
 		super(ship);
 		port = new SpawnerPort!true();
 		port.listen((float[2] entity) {
-			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity));
+			ship.world.addEntity(new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity)));
 		});
 	}
 	
@@ -133,7 +140,7 @@ class MissileTube : Component {
 		super(ship);
 		port = new PingOutPort!true();
 		port.listen(() {
-			ship.world.entities ~= new Entity(bulletObject, ship.entity.pos, vec(1f,0).velRel(ship.entity), ship.entity.ori);
+			ship.world.addEntity(new Entity(bulletObject, ship.entity.pos, vec(2f,0).velRel(ship.entity), ship.entity.ori));
 		});
 	}
 	
