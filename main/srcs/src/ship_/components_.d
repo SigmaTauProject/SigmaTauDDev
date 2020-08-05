@@ -76,10 +76,10 @@ class DirectThruster : ThrusterBase {
 	override void update() {
 		final switch (type) {
 			case Type.fore:
-				ship.entity.applyImpulseCentered(vec(port.get*2000, 0));
+				ship.entity.applyImpulseCentered(vec(port.get, 0));
 				break;
 			case Type.side:
-				ship.entity.applyImpulseCentered(vec(0, port.get*1000));
+				ship.entity.applyImpulseCentered(vec(0, port.get));
 				break;
 			case Type.rot:
 				ship.entity.applyImpulseAngular(port.get/25);
@@ -100,7 +100,7 @@ class Radar : Component {
 	}
 	
 	override void update() {
-		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, e.ori, (e.vel.castType!float / 1000f).data)).array));
+		port.set(new RadarData(ship.world.entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array));
 	}
 }
 class Spawner : Component {
@@ -119,7 +119,7 @@ class Spawner : Component {
 				ignoreFirst = false;
 				return;
 			}
-			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1000f).velRel(ship.entity), 16384.oriRel(ship.entity));
+			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity));
 		});
 	}
 	

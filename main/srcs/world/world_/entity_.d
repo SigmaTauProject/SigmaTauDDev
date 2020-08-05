@@ -70,7 +70,7 @@ T fromFloat(T)(float val) if (isIntegral!T) {
 
 
 void applyWorldImpulseCentered(Entity entity, Imp impulse) {
-	entity.vel += (impulse / entity.object.mass).castType!int;
+	entity.vel += ((impulse / entity.object.mass) * 65536).castType!int;
 }
 void applyWorldImpulseAngular(Entity entity, Ani impulse) {
 	entity.anv += (impulse / entity.object.inertia).anvFromRadians;

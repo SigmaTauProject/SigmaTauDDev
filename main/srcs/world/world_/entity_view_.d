@@ -48,17 +48,17 @@ struct EntityView {
 
 
 RelPos relPos(WorldPos pos, Entity root) {
-	return (pos - root.pos).castType!float.rotate(- root.ori.toRadians).point;
+	return ((pos - root.pos).castType!float / 65536).rotate(- root.ori.toRadians).point;
 }
 WorldPos posRel(RelPos pos, Entity root) {
-	return point(pos.vector.rotate(root.ori.toRadians).castType!long + root.pos.vector);
+	return point((pos.vector.rotate(root.ori.toRadians) * 65536).castType!long + root.pos.vector);
 }
 
 RelVel relVel(WorldVel vel, Entity root) {
-	return (vel - root.vel).castType!float.rotate(- root.ori.toRadians);
+	return ((vel - root.vel).castType!float / 65536).rotate(- root.ori.toRadians);
 }
 WorldVel velRel(RelVel vel, Entity root) {
-	return vel.rotate(root.ori.toRadians).castType!int + root.vel;
+	return (vel.rotate(root.ori.toRadians) * 65536).castType!int + root.vel;
 }
 
 Ori relOri(Ori ori, Entity root) {
@@ -70,7 +70,7 @@ Ori oriRel(Ori ori, Entity root) {
 
 
 void applyImpulseCentered(Entity entity, Imp impulse) {
-	entity.vel += (impulse / entity.object.mass).rotate(entity.ori.toRadians).castType!int;
+	entity.vel += ((impulse / entity.object.mass) * 65536).rotate(entity.ori.toRadians).castType!int;
 }
 void applyImpulseAngular(Entity entity, Ani impulse) {
 	entity.anv += (impulse / entity.object.inertia).anvFromRadians;
