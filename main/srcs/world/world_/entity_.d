@@ -1,120 +1,83 @@
 module world_.entity_;
 
+import std.traits;
+
 import std.math;
 import math.tau;
 
 import math.linear.vector;
 import math.linear.point;
-import world_.game_time_;
 import math.loopnum;
 
-alias Pos = PVec2!long;
-alias Vel = Vec2!int;
+import world_.entity_object_;
+
+alias WorldPos = PVec2!long;
+alias WorldVel = Vec2!int;
 alias Ori = ushort;
 alias Anv = int;
 
-alias PosRel = PVec2!float;
-alias VelRel = Vec2!float;
+alias Radians = float;
 
 alias Imp = Vec2!float;
 alias Ani = float;
 
-Vec2!long timedVel(Vel vel, GameDuration dur) {
-	return vel.castType!long * (dur.duration);
-}
-float timedAnv(Anv anv, GameDuration dur) {
-	return anv * (dur.duration);
-}
 
 class Entity {
-	Pos	pos	;
-	Vel	vel	;
+	WorldPos	pos	;
+	WorldVel	vel	;
 	Ori	ori	;
 	Anv	anv	;
 	
-	float	mass	;
-	float	inertia	;
-	
-	int radius;
+	EntityObject object;
 	
 	float playAhead = 0.0; // The % of the tick position has been updated for (used in the physics loop).
 	
 	this (
-		int	radius	,
-		Pos	pos	= pvec(0L,0),
-		Vel	vel	= vec(0,0),
-		Ori	ori	= 0,
-		Anv	anv	= 0,
+		EntityObject	object	,
+		WorldPos	pos	= pvec(0L,0)	,
+		WorldVel	vel	= vec(0,0)	,
+		Ori	ori	= 0	,
+		Anv	anv	= 0	,
 	){
-		this.radius	= radius;
-		this.pos	= pos;
-		this.vel	= vel;
-		this.ori	= ori;
-		this.anv	= anv;
-		auto r2 = cast(float) radius * radius;
-		this.mass	= r2 * PI;
-		this.inertia	= mass * r2 / 2;
+		this.object	= object	;
+		this.pos	= pos	;
+		this.vel	= vel	;
+		this.ori	= ori	;
+		this.anv	= anv	;
 	}
 }
 
-struct EntityView {
-	Entity entity	;
-	Entity root	;
-	
-	alias entity this;
-	
-	PVec2!float pos() {
-		return (entity.pos - root.pos).castType!float.rotate(root.ori.toRadians).point;
-	}
-	Vec2!float vel() {
-		return (entity.vel - root.vel).castType!float.rotate(root.ori.toRadians);
-	}
-	ushort ori() {
-		return cast(ushort)(entity.ori - root.ori);
-	}
-	float rOri() {
-		return ori.toRadians;
-	}
-	float rAnv() {
-		return anv.toRadians;
-	}
-	
-	void pos(PVec2!float v) {
-		entity.pos = point(v.vector.rotate(- root.ori.toRadians).castType!long + root.pos.vector);
-	}
-	void vel(Vec2!float v) {
-		entity.vel = v.rotate(- root.ori.toRadians).castType!int + root.vel;
-	}
-	void ori(ushort v) {
-		entity.ori = cast(ushort)(v + root.ori);
-	}
-}
 
-float toRadians(Ori a) {
-	return cast(float) a * (TAU / 65536);
+Radians toRadians(Ori a) {
+	return cast(Radians) a * (TAU / 65536);
 }
-float toRadians(Anv a) {
-	return cast(float) a * (TAU / 65536);
+Radians toRadians(Anv a) {
+	return cast(Radians) a * (TAU / 65536);
 }
-Anv fromRadians(float a) {
+Ori oriFromRadians(Radians a) {
+	return cast(Ori) ((a * 65536) / TAU);
+}
+Anv anvFromRadians(Radians a) {
 	return cast(Anv) ((a * 65536) / TAU);
 }
 
-void writeEntity(Entity e) {
-	import std.stdio;
-	writeln(e.pos,e.vel);
+float toFloat(T)(T val) if (isIntegral!T) {
+	return cast(float) val / 65536;
+}
+T fromFloat(T)(float val) if (isIntegral!T) {
+	return cast(T) (val * 65536);
 }
 
 
-void applyImpulse(Entity entity, Imp impulse) {
-	entity.vel += (impulse / entity.mass).rotate(entity.ori.toRadians).castType!int;
+void applyWorldImpulseCentered(Entity entity, Imp impulse) {
+	entity.vel += ((impulse / entity.object.mass) * 65536).castType!int;
 }
-void applyImpulse(Entity entity, Ani impulse) {
-	entity.anv += (impulse / entity.inertia).fromRadians;
+void applyWorldImpulseAngular(Entity entity, Ani impulse) {
+	entity.anv += (impulse / entity.object.inertia).anvFromRadians;
 }
-void applyImpulse(Entity entity, Imp impulse, PosRel pos) {
-	entity.applyImpulse(impulse);
-	entity.applyImpulse(cross(pos.vector, impulse));
+void applyWorldImpulse(Entity entity, Imp impulse, PVec2!float pos) {
+	entity.applyWorldImpulseCentered(impulse);
+	entity.applyWorldImpulseAngular(cross(pos.vector, impulse));
 }
 
 

@@ -6,12 +6,15 @@ import std.range;
 
 import world_.world_;
 import world_.entity_;
+import world_.entity_object_;
+import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
 import ports_.port_;
 import ports_.bridge_;
 import ports_.wire_;
+import ports_.ping_;
 import ports_.radar_;
 import ports_.spawner_;
 
@@ -59,18 +62,30 @@ class ThrusterBase : Component {
 	}
 }
 class DirectThruster : ThrusterBase {
-	bool ori;
+	enum Type {
+		fore	,
+		side	,
+		rot	,
+	}
+	Type type;
 	
-	this(Ship ship, bool ori) {
+	this(Ship ship, Type type) {
 		super(ship);
-		this.ori = ori;
+		this.type = type;
 	}
 	
 	override void update() {
-		if (ori)
-			ship.entity.applyImpulse(port.get*20000*65536);
-		else
-			ship.entity.applyImpulse(vec(0, -port.get*2000*65536));
+		final switch (type) {
+			case Type.fore:
+				ship.entity.applyImpulseCentered(vec(port.get, 0));
+				break;
+			case Type.side:
+				ship.entity.applyImpulseCentered(vec(0, port.get));
+				break;
+			case Type.rot:
+				ship.entity.applyImpulseAngular(port.get/25);
+				break;
+		}
 	}
 }
 class Radar : Component {
@@ -78,15 +93,22 @@ class Radar : Component {
 		RadarPort!true port;
 	}
 	
+	Entity[] entities;
+	
 	mixin ComponentMixin!();
 	
 	this(Ship ship) {
 		super(ship);
-		port = new RadarPort!true(new RadarData([]));
+		port = new RadarPort!true;
+		update;
 	}
 	
 	override void update() {
-		port.set(new RadarData(ship.world.entities.map!(e=>RadarEntity((e.pos.vector.castType!float / 1000f).data, e.ori, (e.vel.castType!float / 1000f).data)).array));
+		entities ~= ship.world.newEntities;
+		port.update(
+			ship.world.newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array,
+			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array
+		);
 	}
 }
 class Spawner : Component {
@@ -98,14 +120,27 @@ class Spawner : Component {
 	
 	this(Ship ship) {
 		super(ship);
-		port = new SpawnerPort!true([0,0]);
-		bool ignoreFirst = true;
+		port = new SpawnerPort!true();
 		port.listen((float[2] entity) {
-			if (ignoreFirst) {
-				ignoreFirst = false;
-				return;
-			}
-			ship.world.entities ~= new Entity(1000,point(vec(entity).castType!long),vec(1000,0), 16384);
+			ship.world.addEntity(new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity)));
+		});
+	}
+	
+	override void update() {
+	}
+}
+class MissileTube : Component {
+	@Ports struct {
+		PingOutPort!true port;
+	}
+	
+	mixin ComponentMixin!();
+	
+	this(Ship ship) {
+		super(ship);
+		port = new PingOutPort!true();
+		port.listen(() {
+			ship.world.addEntity(new Entity(bulletObject, ship.entity.pos, vec(2f,0).velRel(ship.entity), ship.entity.ori));
 		});
 	}
 	

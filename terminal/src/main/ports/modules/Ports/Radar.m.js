@@ -1,15 +1,18 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
-import {WirePortBase, WirePortType} from "./Wire.m.js";
-import Ptr from "/modules/Ptr.m.js";
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
+import {gettableMixin} from "./Bases/_Gettable.m.js";
+import {listenableMixin} from "./Bases/_Listenable.m.js";
 
 export
+class RadarEntityObject {
+	static serial_radius = SerialType.float32;
+	static serial_shape = SerialType.array(SerialType.staticArray(SerialType.float32, 2));
+	
+	radius;
+	shape;
+}
+export
 class RadarEntity {
-	constructor(pos, vel) {
-		this.pos = pos;
-		this.vel = vel;
-	}
-		
 	static serial_pos = SerialType.staticArray(SerialType.float32, 2);
 	static serial_ori = SerialType.uint16;
 	static serial_vel = SerialType.staticArray(SerialType.float32, 2);
@@ -20,15 +23,85 @@ class RadarEntity {
 }
 
 export
-class RadarData {
-	constructor(entities) {
-		this.entities = entities;
+class RadarPort extends Port {
+	//---Constructors
+	constructor() {
+		super(PortType.radar);
 	}
 	
-	static serial_entities = SerialType.array(SerialType.object(RadarEntity));
+	//---Private Members
+	entityObjects	= []	;
+	entities	= []	;
+			
+	dataComing	= false	;
+	numListeners	= 0	;
 	
-	entities;
+	///---Messages
+	static rpc_get	= [0, ];
+	static rpc_listen	= [1, ];
+	static rpc_unlisten	= [2, ];
+	static rpc_update	= [3, SerialType.array(SerialType.struct(RadarEntityObject)), SerialType.array(SerialType.struct(RadarEntity)), ];
+	
+	//-Getting
+	doInit(callbacks) {
+		callbacks.forEach(c=>c(this.entityObjects, this.entities));
+	}
+	doUpdate(callbacks, newEntities) {
+		callbacks.forEach(c=>c(newEntities, this.entities));
+	}
+	
+	onGet() {
+		if (this.entityObjects.length)
+			this.onGetReady();
+		else if (!this.dataComing) {
+			this.get_send();
+			this.dataComing = true;
+		}
+	}
+	
+	//-Listening
+	doPullListen(callbacks) {
+		console.assert(false);
+	}
+	onListen() {
+		if (this.entityObjects.length)
+			this.onListenReady();
+		else if (!this.numListeners)  {
+			this.listen_send();
+			this.dataComing = true;
+		}
+		this.numListeners++;
+	}
+	onUnlisten() {
+		this.numListeners--;
+		if (!this.numListeners) {
+			this.unlisten_send();
+			this.entityObjects = [];
+			this.entities = [];
+		}
+	}
+	
+	//-Setting
+	update(newEntities, entities) {
+		this.entityObjects.push(...newEntities);
+		this.entities = entities;
+		
+		this.dataComing = false;
+		
+		this.onGetReady();
+		this.listenerCall("doUpdate", newEntities);
+		this.onListenReady();
+		
+		if (!this.numListeners) {
+			this.entityObjects = [];
+			this.entities = [];
+		}
+	}
 }
 
-export const RadarPort = WirePortBase(WirePortType.wireIn, SerialType.object(RadarData), PortType.radar);	portMixin_withRPC(RadarPort);
- 
+portMixin_withRPC(RadarPort);
+gettableMixin(RadarPort, "doInit", "onGet");
+listenableMixin(RadarPort, "doInit", "doPullListen", "onListen", "onUnlisten");
+
+
+

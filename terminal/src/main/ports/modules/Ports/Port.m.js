@@ -7,15 +7,16 @@ const PortType = {
 	wire	: 1,
 	wireIn	: 2,
 	wireOut	: 3,
-	radar	: 4,
-	spawner	: 5,
+	pingOut	: 4,
+	radar	: 5,
+	spawner	: 6,
 	unknown	: -1,
 }
 
 export
 const Src = {
-	server	: 1	,
-	self	: 2	,
+	server	: Symbol("SrcServer")	,
+	self	: Symbol("SrcSelf")	,
 };
 
 export
