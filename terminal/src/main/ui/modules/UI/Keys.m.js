@@ -23,11 +23,13 @@ class WireKeys {
 					keyDown = false;
 					if (snap != null && ((max>0 && valuePtr.payload>0) || (max<0 && valuePtr.payload<0)))
 						wirePort.set(snap);
+					e.preventDefault();
 				}
 				else if (e.code == negKey) {
 					negKeyDown = false;
 					if (snap != null && ((min>0 && valuePtr.payload>0) || (min<0 && valuePtr.payload<0)))
 						wirePort.set(snap);
+					e.preventDefault();
 				}
 			});
 		});
@@ -40,6 +42,20 @@ class WireKeys {
 		};
 		setInterval(update, 100);
 		this.destroy = ()=>removeInterval(update);
+	}
+}
+
+export
+class PingKey {
+	destory() {}
+	
+	constructor(pingPort, key, {}={}) {
+		window.addEventListener("keydown",(e)=>{
+			if (e.code == key) {
+				pingPort.ping();
+				e.preventDefault();
+			}
+		});
 	}
 }
 

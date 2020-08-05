@@ -69,6 +69,9 @@ class Bridge(bool isMaster) : Port!isMaster {
 			case PortType.wireOut:
 				addPort!(PortType.wireOut);
 				break;
+			case PortType.pingOut:
+				addPort!(PortType.pingOut);
+				break;
 			case PortType.radar:
 				addPort!(PortType.radar);
 				break;

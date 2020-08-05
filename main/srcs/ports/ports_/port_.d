@@ -7,6 +7,7 @@ import std.algorithm;
 
 import ports_.bridge_;
 import ports_.wire_;
+import ports_.ping_;
 import ports_.radar_;
 import ports_.spawner_;
 
@@ -21,6 +22,7 @@ enum PortType : ubyte {
 	@PortClass!WirePort	wire	,
 	@PortClass!WireInPort	wireIn	,
 	@PortClass!WireOutPort	wireOut	,
+	@PortClass!PingOutPort	pingOut	,
 	@PortClass!RadarPort	radar	,
 	@PortClass!SpawnerPort	spawner	,
 }

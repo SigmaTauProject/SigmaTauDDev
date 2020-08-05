@@ -41,6 +41,7 @@ class Ship : ship_.components_.Ship{
 		installComponent!DirectThruster(DirectThruster.Type.rot);
 		installComponent!DirectThruster(DirectThruster.Type.side);
 		installComponent!Spawner;
+		installComponent!MissileTube;
 	}
 	
 	void update(TerminalConnection[] newTerminals) {

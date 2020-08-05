@@ -14,6 +14,7 @@ import math.linear.point;
 import ports_.port_;
 import ports_.bridge_;
 import ports_.wire_;
+import ports_.ping_;
 import ports_.radar_;
 import ports_.spawner_;
 
@@ -115,6 +116,24 @@ class Spawner : Component {
 		port = new SpawnerPort!true();
 		port.listen((float[2] entity) {
 			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity));
+		});
+	}
+	
+	override void update() {
+	}
+}
+class MissileTube : Component {
+	@Ports struct {
+		PingOutPort!true port;
+	}
+	
+	mixin ComponentMixin!();
+	
+	this(Ship ship) {
+		super(ship);
+		port = new PingOutPort!true();
+		port.listen(() {
+			ship.world.entities ~= new Entity(bulletObject, ship.entity.pos, vec(1f,0).velRel(ship.entity), ship.entity.ori);
 		});
 	}
 	
