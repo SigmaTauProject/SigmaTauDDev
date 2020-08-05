@@ -14,8 +14,8 @@ const PortType = {
 
 export
 const Src = {
-	server	: 1	,
-	self	: 2	,
+	server	: Symbol("SrcServer")	,
+	self	: Symbol("SrcSelf")	,
 };
 
 export

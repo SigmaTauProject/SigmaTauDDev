@@ -1,5 +1,5 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
-import {WirePortBase, WirePortType} from "./Wire.m.js";
+import {WireInPortBase} from "./Bases/WireIn.m.js";
 import Ptr from "/modules/Ptr.m.js";
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 
@@ -34,5 +34,5 @@ class RadarData {
 	entities;
 }
 
-export const RadarPort = WirePortBase(WirePortType.wireIn, SerialType.object(RadarData), PortType.radar);	portMixin_withRPC(RadarPort);
+export const RadarPort = WireInPortBase(SerialType.object(RadarData), PortType.radar);
  

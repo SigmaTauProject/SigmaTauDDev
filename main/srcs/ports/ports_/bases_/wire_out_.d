@@ -64,11 +64,13 @@ template WireOutPortBase(T) {
 		
 		//-Setting
 		@RPC!SrcClient(3)
-		void set(Src)(T v) {
+		void set(Src)(T v) if (!is(Src == SrcServer)) {
 			static if (isMaster) {
 				data = v;
 				listenerCall!"doSend";
 			}
+			static if (!isMaster)
+				set_send!TrgtServer(v);
 		}
 		static if (isMaster)
 		void set(T v) {

@@ -1,5 +1,5 @@
 import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
-import {WirePort, WireInPort, WireOutPort} from "/modules/Ports/Wire.m.js";
+import {WirePort, /**WireInPort, */WireOutPort} from "/modules/Ports/Wire.m.js";
 import {RadarPort} from "/modules/Ports/Radar.m.js";
 import {SpawnerPort} from "/modules/Ports/Spawner.m.js";
 import {UnknownPort} from "/modules/Ports/Unknown.m.js";
