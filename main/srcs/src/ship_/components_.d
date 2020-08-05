@@ -112,13 +112,8 @@ class Spawner : Component {
 	
 	this(Ship ship) {
 		super(ship);
-		port = new SpawnerPort!true([0,0]);
-		bool ignoreFirst = true;
+		port = new SpawnerPort!true();
 		port.listen((float[2] entity) {
-			if (ignoreFirst) {
-				ignoreFirst = false;
-				return;
-			}
 			ship.world.entities ~= new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity));
 		});
 	}

@@ -18,8 +18,8 @@ mixin template LoneGettable(alias doGet, alias onGet, int rpcID) {
 			getWaiters ~= con;
 			onGet;
 		}
-	void onGetReady() {
-		doGet(getWaiters);
+	void onGetReady(Parameters!doGet[1..$] args) {
+		doGet(getWaiters, args);
 		getWaiters.length = 0;
 		getWaiters.assumeSafeAppend;// Optimization, verifying that getWaiters in not being used anywhere else.
 	}
@@ -30,9 +30,9 @@ mixin template Gettable(string doGetName, alias onGet) {
 		mixin("mixin LoneGettable!(doGet, onGet, [getUDAs!(doGet, RPCGetID), RPCGetID(-1)][0].rpcID) mixin_"~i.to!string~"_;");
 		mixin("alias get = mixin_"~i.to!string~"_.get;");
 	}
-	void onGetReady() {
+	void onGetReady(Parameters!(mixin(doGetName))[1..$] args) {
 		static foreach(i, fun; __traits(getOverloads, typeof(this), doGetName)) {
-			mixin("mixin_"~i.to!string~"_.onGetReady;");
+			mixin("mixin_"~i.to!string~"_.onGetReady(args);");
 		}
 	}
 }

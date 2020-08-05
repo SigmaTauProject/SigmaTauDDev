@@ -36,8 +36,8 @@ mixin template LoneListenable(alias doListen, alias onListen, alias onUnlisten, 
 			onUnlisten;
 		}
 	}
-	void onListenReady() {
-		doListen(listenWaiters);
+	void onListenReady(Parameters!doListen[1..$] args) {
+		doListen(listenWaiters, args);
 		listeners ~= listenWaiters;
 		listenWaiters.length = 0;
 		listenWaiters.assumeSafeAppend;// Optimization, verifying that listenWaiters in not being used anywhere else.
@@ -53,9 +53,9 @@ mixin template Listenable(string doListenName, alias onListen, alias onUnlisten)
 		mixin("alias listen = mixin_"~i.to!string~"_.listen;");
 		mixin("alias unlisten = mixin_"~i.to!string~"_.unlisten;");
 	}
-	void onListenReady() {
+	void onListenReady(Parameters!(mixin(doListenName))[1..$] args) {
 		static foreach(i, _; __traits(getOverloads, typeof(this), doListenName)) {
-			mixin("mixin_"~i.to!string~"_.onListenReady;");
+			mixin("mixin_"~i.to!string~"_.onListenReady(args);");
 		}
 	}
 	void listenerCall(string fun)(Parameters!(mixin(fun))[1..$] args) {
