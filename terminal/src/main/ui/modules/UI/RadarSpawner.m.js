@@ -4,7 +4,7 @@ export
 class RadarSpawner {
 	
 	constructor(radar, spawnerPort, {}={}) {
-		radar.background.addEventListener("click",ev=>spawnerPort.send(viewPoint(radar.el,radar.background,ev.clientX,ev.clientY)));
+		radar.background.addEventListener("click",ev=>spawnerPort.send(viewPoint(radar.el,radar.view,ev.clientX,ev.clientY)));
 	}
 	
 	update() {}
@@ -20,5 +20,5 @@ function viewPoint(svg, element, x, y) {
   pt.y = y;
   pt = pt.matrixTransform(element.getScreenCTM().inverse());
 
-  return [-pt.y*20, pt.x*20];
+  return [-pt.y, pt.x];
 }

@@ -7,7 +7,6 @@ import math.tau;
 
 import math.linear.vector;
 import math.linear.point;
-import math.loopnum;
 
 import world_.entity_object_;
 
@@ -31,6 +30,10 @@ class Entity {
 	EntityObject object;
 	
 	float playAhead = 0.0; // The % of the tick position has been updated for (used in the physics loop).
+	
+	Entity[]	collisions	= [];
+	
+	bool	alive	=true;
 	
 	this (
 		EntityObject	object	,
@@ -66,6 +69,19 @@ float toFloat(T)(T val) if (isIntegral!T) {
 }
 T fromFloat(T)(float val) if (isIntegral!T) {
 	return cast(T) (val * 65536);
+}
+
+Vec!(float, size) toFloat(T, size_t size)(Vec!(T, size) val) if (isIntegral!T) {
+	return val.castType!float / 65536;
+}
+Vec!(T, size) fromFloat(T, size_t size)(Vec!(float, size) val) if (isIntegral!T) {
+	return (val * 65536).castType!T;
+}
+Point!(Vec!(float, size)) toFloat(T, size_t size)(Point!(Vec!(T, size)) val) if (isIntegral!T) {
+	return point(val.v.castType!float / 65536);
+}
+Point!(Vec!(T, size)) fromFloat(T, size_t size)(Point!(Vec!(float, size)) val) if (isIntegral!T) {
+	return (val * 65536).castType!T;
 }
 
 

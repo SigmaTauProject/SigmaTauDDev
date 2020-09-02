@@ -40,14 +40,14 @@ class RadarPort extends Port {
 	static rpc_get	= [0, ];
 	static rpc_listen	= [1, ];
 	static rpc_unlisten	= [2, ];
-	static rpc_update	= [3, SerialType.array(SerialType.struct(RadarEntityObject)), SerialType.array(SerialType.struct(RadarEntity)), ];
+	static rpc_update	= [3, SerialType.array(SerialType.struct(RadarEntityObject)), SerialType.array(SerialType.uint32), SerialType.array(SerialType.struct(RadarEntity))];
 	
 	//-Getting
 	doInit(callbacks) {
-		callbacks.forEach(c=>c(this.entityObjects, this.entities));
+		callbacks.forEach(c=>c(this.entityObjects, [], this.entities));
 	}
-	doUpdate(callbacks, newEntities) {
-		callbacks.forEach(c=>c(newEntities, this.entities));
+	doUpdate(callbacks, newEntities, removedEntities) {
+		callbacks.forEach(c=>c(newEntities, removedEntities, this.entities));
 	}
 	
 	onGet() {
@@ -82,14 +82,16 @@ class RadarPort extends Port {
 	}
 	
 	//-Setting
-	update(newEntities, entities) {
+	update(newEntities, removedEntities, entities) {
 		this.entityObjects.push(...newEntities);
+		for (let e of removedEntities)
+			this.entityObjects.splice(e,1);
 		this.entities = entities;
 		
 		this.dataComing = false;
 		
 		this.onGetReady();
-		this.listenerCall("doUpdate", newEntities);
+		this.listenerCall("doUpdate", newEntities, removedEntities);
 		this.onListenReady();
 		
 		if (!this.numListeners) {

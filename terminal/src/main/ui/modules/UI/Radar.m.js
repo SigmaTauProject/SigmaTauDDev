@@ -28,7 +28,7 @@ class Radar {
 				svg (	"g",
 					"radar-view",
 					(el)=>{this.view=el},
-					Div.attributes({transform:"scale(0.05)"}),
+					Div.attributes({transform:"scale(0.01)"}),
 				),
 			),
 			svg (	"circle",

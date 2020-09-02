@@ -4,6 +4,7 @@ import std.math;
 import std.algorithm;
 
 import world_.entity_;
+import world_.entity_object_;
 
 import math.linear.vector;
 import math.linear.point;
@@ -11,6 +12,7 @@ import math.geometry.line;
 
 class PhysicsWorld {
 	Entity[] entities;
+	Entity[] gravityWells;
 	
 	this() {
 		//r/entities = [new Entity(1000,pvec(5000L,0),vec(-1000,0)), new Entity(1000,pvec(0L,10000),vec(0,-2000))];
@@ -96,9 +98,24 @@ class PhysicsWorld {
 					//---Collision Resolution
 					entities[e].vel = vec([0,0]);
 					entities[col.o].vel = vec([0,0]);
+					//---Collision Responce
+					entities[e].collisions ~= entities[col.o];
+					entities[col.o].collisions ~= entities[e];
+					if ((entities[e].object == bulletObject && (entities[col.o].object==shipObject || entities[col.o].object==fineShipObject)) || (entities[col.o].object == bulletObject && (entities[e].object==shipObject || entities[e].object==fineShipObject))) {
+						entities[e].alive = false;
+						entities[col.o].alive = false;
+						if (e>col.o) {
+							entities = entities.remove(e);
+							entities = entities.remove(col.o);
+						}
+						else {
+							entities = entities.remove(col.o);
+							entities = entities.remove(e);
+						}
+					}
 					
 					//---Correct Sweep && Rehandle entity
-					e = min(e, resort(e), resort(col.o));
+					e = min(e, e<entities.length?resort(e):size_t.max, col.o<entities.length?resort(col.o):size_t.max);
 					handleEntity(e, upTo);
 				}
 				else {
@@ -109,21 +126,38 @@ class PhysicsWorld {
 			return false;
 		}
 		
+		void startEntity(size_t e) {
+			entities[e].collisions = [];
+		}
+		
 		void finishEntity(size_t e) {
 			entities[e].pos += entities[e].vel * cast(long) ((1 - entities[e].playAhead) * 65536) / 65536;
 			entities[e].playAhead = 1;
 			entities[e].ori += entities[e].anv;
+			foreach (w; gravityWells) {
+				entities[e].applyWorldImpulseCentered(
+					( 0.000000000001f
+					* (cast(float) pow(w.object.mass +1, 3) -1)
+					* (entities[e].object.mass)
+					/ (cast(float) pow(distance(w.pos.toFloat, entities[e].pos.toFloat) +1, 1.5) -1)
+					/ 65536f
+					* (w.pos - entities[e].pos)
+					)
+					.map!(a=>a.isNaN||a.isInfinity?0:a)
+				);
+			}
 		}
 		
 		//---Sweep
 		sweep;
 		
 		//---Collisions
-		foreach (e; 0..entities.length-1) {
-			handleEntity(e);
+		for (auto e=0; e<entities.length; e++) {
+			startEntity(e);
+			if (e != entities.length-1)
+				handleEntity(e);
 			finishEntity(e);
 		}
-		finishEntity(entities.length-1);
 		
 		//---Reset
 		entities.each!(e=>e.playAhead=0);

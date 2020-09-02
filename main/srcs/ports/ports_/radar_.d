@@ -47,18 +47,18 @@ class RadarPort(bool isMaster) : Port!isMaster {
 	@RPCListenID(1)
 	void doInit(Client[] connections) {
 		if (entityObjects.length)
-			update_send!TrgtClient(connections, entityObjects, entities);
+			update_send!TrgtClient(connections, entityObjects, [], entities);
 	}
-	void doInit(void delegate(RadarEntityObject[], RadarEntity[])[] connections) {
+	void doInit(void delegate(RadarEntityObject[], uint[], RadarEntity[])[] connections) {
 		if (entityObjects.length)
-			connections.each!(con=>con(entityObjects, entities));
+			connections.each!(con=>con(entityObjects, [], entities));
 	}
 	
-	void doUpdate(Client[] connections, RadarEntityObject[] newEntities) {
-		update_send!TrgtClient(connections, newEntities, entities);
+	void doUpdate(Client[] connections, RadarEntityObject[] newEntities, uint[] removeEntities) {
+		update_send!TrgtClient(connections, newEntities, removeEntities, entities);
 	}
-	void doUpdate(void delegate(RadarEntityObject[], RadarEntity[])[] connections, RadarEntityObject[] newEntities) {
-		connections.each!(con=>con(newEntities, entities));
+	void doUpdate(void delegate(RadarEntityObject[], uint[], RadarEntity[])[] connections, RadarEntityObject[] newEntities, uint[] removeEntities) {
+		connections.each!(con=>con(newEntities, removeEntities, entities));
 	}
 	
 	static if (isMaster) {
@@ -115,12 +115,14 @@ class RadarPort(bool isMaster) : Port!isMaster {
 	
 	//-Setting
 	@RPC!SrcServer(3)
-	void update(RadarEntityObject[] newEntities, RadarEntity[] entities_) {
+	void update(RadarEntityObject[] newEntities, uint[] removedEntities, RadarEntity[] entities_) {
 		entityObjects ~= newEntities;
+		foreach(e; removedEntities)
+			entityObjects = entityObjects.remove(e);
 		entities = entities_;
 		static if(!isMaster)
 			dataComing = false;
-		listenerCall!"doUpdate"(newEntities);
+		listenerCall!"doUpdate"(newEntities, removedEntities);
 		static if (!isMaster) if (!listeners) {
 			entityObjects = [];
 			entities = [];

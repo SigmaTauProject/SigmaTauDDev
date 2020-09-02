@@ -32,7 +32,7 @@ class Ship : ship_.components_.Ship{
 	
 	this (World world) {
 		this.world = world;
-		entity = new Entity(fineShipObject,pvec(0L,0),vec(0,0), 16384*0);
+		entity = new Entity(fineShipObject,pvec(48.fromFloat!long,0.fromFloat!long),vec(0,0), 16384*0);
 		world.addEntity(entity);
 		bridge = new Bridge!true;
 		

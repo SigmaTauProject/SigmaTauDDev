@@ -100,14 +100,27 @@ class Radar : Component {
 	this(Ship ship) {
 		super(ship);
 		port = new RadarPort!true;
-		update;
+		entities ~= ship.world.entities;
+		port.update(
+			ship.world.newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array,
+			[],
+			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array,
+		);
 	}
 	
 	override void update() {
 		entities ~= ship.world.newEntities;
+		uint[] removedEntities = [];
+		foreach_reverse(i,e; entities) {
+			if (!e.alive) {
+				removedEntities ~= cast(uint) i;
+				entities = entities.remove(i);
+			}
+		}
 		port.update(
 			ship.world.newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array,
-			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array
+			removedEntities,
+			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array,
 		);
 	}
 }
@@ -122,7 +135,7 @@ class Spawner : Component {
 		super(ship);
 		port = new SpawnerPort!true();
 		port.listen((float[2] entity) {
-			ship.world.addEntity(new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,1f).velRel(ship.entity), 16384.oriRel(ship.entity)));
+			ship.world.addEntity(new Entity(shipObject, entity.vec.point.posRel(ship.entity), vec(0,0f).velRel(ship.entity), 16384.oriRel(ship.entity)));
 		});
 	}
 	
