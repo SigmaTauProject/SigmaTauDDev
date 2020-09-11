@@ -1,21 +1,21 @@
 
 
-struct PortMaster {
-	ShipPortSlave*[] slaves;
+mixin template PortMaster(Slave) {
+	Slave*[] slaves;
 	
-	void plugIn(ShipPortSlave* slave) {
+	void plugIn(Slave* slave) {
 		slaves ~= slave;
 		assert(!slave.master);
 		slave.master = &this;
 	}
-	void unplug(ShipPortSlave* slave) {
+	void unplug(Slave* slave) {
 		slaves = slaves.remove(slave);
 		slave.master = null;
 	}
 }
 
-struct PortSlave {
-	ShipPortMaster* master;
+mixin template PortSlave(Master) {
+	Master* master;
 }
 
 

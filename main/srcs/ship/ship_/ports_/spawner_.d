@@ -1,7 +1,7 @@
 
 struct SpawnerMaster {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	SpawnerSlave*[] slaves;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(SpawnerSlave);
 	
 	SpawnerEntity[] _spawns;
 	
@@ -15,8 +15,8 @@ struct SpawnerMaster {
 }
 
 struct SpawnerSlave {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	SpawnerMaster* master;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(SpawnerMaster);
 	
 	void spawn(SpawnerEntity n) {
 		if (master)

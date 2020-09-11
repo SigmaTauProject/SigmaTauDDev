@@ -1,7 +1,7 @@
 
 struct PingMaster {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	PingSlave*[] slaves;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(PingSlave);
 	
 	byte _pings;
 	float _newPings;
@@ -23,8 +23,8 @@ struct PingMaster {
 }
 
 struct PingSlave {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	PingMaster* master;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(PingMaster);
 	
 	byte _pings;
 	

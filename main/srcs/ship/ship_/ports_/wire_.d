@@ -1,7 +1,7 @@
 
 struct WireMaster {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	WireSlave*[] slaves;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(WireSlave);
 	
 	float _value;
 	
@@ -20,8 +20,8 @@ struct WireMaster {
 }
 
 struct WireSlave {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	WireMaster* master;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(WireMaster);
 	
 	float _value;
 	

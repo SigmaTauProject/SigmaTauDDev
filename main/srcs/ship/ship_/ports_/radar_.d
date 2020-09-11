@@ -1,7 +1,7 @@
 
 struct RadarMaster {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	RadarSlave*[] slaves;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(RadarSlave);
 	
 	RadarEntityObject[]	_entityObjects	;
 	RadarEntity[]	_entities	;
@@ -25,8 +25,8 @@ struct RadarMaster {
 }
 
 struct RadarSlave {
-	// This line must be here (for every port) (at the vary beginning).  It is a form of inheritance magic.  Changing this will invoke dragons...
-	RadarMaster* master;
+	// Mixins are basically a form of inheritance.
+	mixin PortSlave!(RadarMaster);
 	
 	RadarEntityObject[]	_entityObjects	;
 	RadarEntity[]	_entities	;
