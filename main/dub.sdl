@@ -11,11 +11,11 @@ importPaths	"srcs/src"
 preBuildCommands	"rm -r ../dist || true"
 
 subPackage {
-	name	"ports"
+	name	"ship"
 	targetType	"library"
 	targetPath	"../dist"
-	sourcePaths	"srcs/ports"
-	importPaths	"srcs/ports"
+	sourcePaths	"srcs/ship"
+	importPaths	"srcs/ship"
 	
 	dependency "cst" version="~>1.0"
 	dependency "tau" version="~>1.0"
@@ -95,7 +95,7 @@ subPackage {
 	dependency "loopnum" version="~>1.0.0-beta"
 }
 
-dependency "sigma_tau:ports" version="*"
+dependency "sigma_tau:ship" version="*"
 dependency "sigma_tau:terminal_networking" version="*"
 dependency "sigma_tau:terminal_connection" version="*"
 dependency "sigma_tau:world" version="*"

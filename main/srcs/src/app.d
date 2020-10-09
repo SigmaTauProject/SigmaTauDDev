@@ -34,7 +34,11 @@ void main() {
 		auto loopStartTime = MonoTime.currTime;
 		terminalServer.update;
 		world.update;
-		ship.update(terminalServer.getNewTerminals);
+		auto newClients = terminalServer.getNewTerminals;
+		if (newClients.length)
+			ship.bridge.net.newClients(newClients);
+		ship.bridge.net.update;
+		ship.update();
 		
 		Thread.sleep(max(0.msecs, 100.msecs - (MonoTime.currTime - loopStartTime)));
 		////if (readln()=="q")

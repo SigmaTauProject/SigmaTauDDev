@@ -1,37 +1,64 @@
+module ship_.ports_.wire_;
+
 
 struct WireMaster {
-	// Mixins are basically a form of inheritance.
-	mixin PortSlave!(WireSlave);
+	//---POD
+	float _value = 0;
+	float _nextValue = 0;
 	
-	float _value;
+	NetWireConnection net;
 	
+	//---methods
 	@property float value() {
 		return _value;
 	}
 	void setValue(float n) {
 		// TODO: validate.
-		_value = n;
-		slaves.each!(s=>s._value = n);
+		if (n != _value) {
+			_value = n;
+			_nextValue = n;
+			if (net)
+				net.onSetValue;
+		}
 	}
 	
 	void update() {
-		setValue(_value);
+		setValue(_nextValue);
+	}
+	
+	@property
+	WireSlave* slave() {
+		return cast(WireSlave*) &this;
 	}
 }
 
 struct WireSlave {
-	// Mixins are basically a form of inheritance.
-	mixin PortSlave!(WireMaster);
-	
+	//---POD
 	float _value;
+	float _nextValue;
 	
+	//---methods
 	@property float value() {
 		return _value;
 	}
 	void setValue(float n) {
 		// TODO: validate.
-		_value = n;
-		if (master)
-			master._value = n;
+		_nextValue = n;
 	}
+}
+
+abstract class NetWireConnection {
+	WireSlave* port;
+	
+	this(WireSlave* port) {
+		this.port = port;
+		(cast(WireMaster*) port).net = this;
+	}
+	
+	void setValue(float n) {
+		port._value = n;
+		port._nextValue = n;
+	}
+	
+	abstract void onSetValue();
 }

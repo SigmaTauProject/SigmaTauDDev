@@ -1,15 +1,15 @@
-module ports_.port_;
+module ship_.net_ports_.port_;
 
 import treeserial;
 import structuredrpc;
 import std.traits;
 import std.algorithm;
 
-import ports_.bridge_;
-import ports_.wire_;
-import ports_.ping_;
-import ports_.radar_;
-import ports_.spawner_;
+import ship_.net_ports_.bridge_;
+import ship_.net_ports_.wire_;
+////import ports_.ping_;
+////import ports_.radar_;
+////import ports_.spawner_;
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
@@ -18,13 +18,13 @@ struct PortClass(alias Class) {
 }
 
 enum PortType : ubyte {
-	@PortClass!Bridge	bridge	,
-	@PortClass!WirePort	wire	,
-	@PortClass!WireInPort	wireIn	,
-	@PortClass!WireOutPort	wireOut	,
-	@PortClass!PingOutPort	pingOut	,
-	@PortClass!RadarPort	radar	,
-	@PortClass!SpawnerPort	spawner	,
+	@PortClass!NetBridge	bridge	,
+	@PortClass!NetWire	wire	,
+////	@PortClass!WireInPort	wireIn	,
+////	@PortClass!WireOutPort	wireOut	,
+////	@PortClass!PingOutPort	pingOut	,
+////	@PortClass!RadarPort	radar	,
+////	@PortClass!SpawnerPort	spawner	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 enum enumMemberUDAFixMixin(string enumName) = q{
@@ -36,20 +36,19 @@ enum SrcServer;
 enum SrcClient;
 enum SrcSelf;
 alias TrgtServer = SrcClient;
-alias TrgtClient = SrcServer;
+alias TrgtClients = SrcServer;
 
-alias Test = WirePort!false;
 
 abstract
-class Port(bool isMaster) {
+class NetPort {
 	PortType type;
 	ubyte id;
 	
 	// this is not a normal constructor because I was having problems calling a templated `super` constructor.
 	void this_(This)() {
-		// Magic to automatically calculate PortType; using Type and PortClass UDA defined on PortType members.
+		// Magic to automatically set PortType; using Type and PortClass UDA defined on PortType members.
 		static foreach(type; EnumMembers!PortType) {
-			static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!(TemplateOf!This)).length)
+			static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!This).length)
 				this.type = type;
 		}
 	}
@@ -67,37 +66,47 @@ class Port(bool isMaster) {
 		writeln("sending to server:", id~data);
 		assert(false, "Unimplemented");
 	}
-	@RPCSend!TrgtClient
+	@RPCSend!TrgtClients
 	void _rpcSendClient(Client[] clients, const(ubyte)[] data) {
 		clients.each!(t=>t.put(id~data));
 	}
 	
-	static if (!isMaster)
 	abstract
 	void recvServerMsg(const(ubyte)[] msg);
 	abstract
 	void recvClientMsg(Client client, const(ubyte)[] msg);
 }
 
-mixin template PortMixin_WithRPC() {
+mixin template NetPortMixin(bool isRoot, Other) {
 	import std.traits;
 	import treeserial;
 	import structuredrpc;
 	
+	static if (isRoot) {
+		alias RootT = typeof(this);
+		alias BranchT = Other;
+	}
+	else {
+		alias RootT = Other;
+		alias BranchT = typeof(this);
+	}
+	
+	mixin MakeRPCSendTo!(BranchT, TrgtClients, Serializer!(LengthType!ubyte));
+	static if (!isRoot)
+		mixin MakeRPCSendTo!(RootT, TrgtServer, Client, Serializer!(LengthType!ubyte));
+	
 	public mixin MakeRPCReceive!(SrcClient, Client, Serializer!(LengthType!ubyte));
-	static if (!isMaster)
+	static if (!isRoot)
 		public mixin MakeRPCReceive!(SrcServer, Serializer!(LengthType!ubyte));
 	
-	alias ThisTemplate = TemplateOf!(typeof(this));
-	mixin MakeRPCSendTo!(ThisTemplate!false, TrgtClient, Serializer!(LengthType!ubyte)) S;
-	static if (!isMaster)
-		mixin MakeRPCSendTo!(ThisTemplate!true, TrgtServer, Client, Serializer!(LengthType!ubyte)) C;
-	
-	static if (!isMaster)
-	public override
-	void recvServerMsg(const(ubyte)[] msg) {
-		rpcRecv!SrcServer(msg);
-	}
+	static if (!isRoot)
+		public override
+		void recvServerMsg(const(ubyte)[] msg) {
+			rpcRecv!SrcServer(msg);
+		}
+	else
+		public override
+		void recvServerMsg(const(ubyte)[] msg) { assert(false); }
 	public override
 	void recvClientMsg(Client client, const(ubyte)[] msg) {
 		rpcRecv!SrcClient(client, msg);
