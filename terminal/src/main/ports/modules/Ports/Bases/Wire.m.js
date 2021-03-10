@@ -60,8 +60,32 @@ function WirePortBase(T, portType) {
 			}
 		}
 		
+		// Pacing
+		last = null;
+		toSend = null;
+		
 		//-Setting
 		set(v, src=Src.self) {
+			if (src==Src.self) {// Pacing
+				let now = Date.now();
+				if (this.last == "callback") {
+					this.toSend = v;
+					return;
+				}
+				if (this.last !== null && this.last > now-50) {
+					this.toSend = v;
+					setTimeout(()=>{
+						this.last = null;
+						this.set(this.toSend, src);
+					}, 60-(now-this.last));
+					this.last = "callback";
+					return;
+				}
+				this.last = now;
+			}
+			else {
+				this.toSend = v;
+			}
 			if (this.data != null)
 				this.data.payload = v;
 			else
