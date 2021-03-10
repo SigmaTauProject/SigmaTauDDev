@@ -8,7 +8,7 @@ class Slider {
 	constructor(wirePort, {min=-1,max=1,step=0.01}={}) {
 		let input;
 		let workingValue = null;
-		this.el	= div (	"div", "verticalSlider-outer",
+		this.el	= div (	"div", "slider-outer", "verticalSlider-outer",
 				div (	"input", "slider","verticalSlider",
 					el => input = el,
 					Div.attributes({type:"range", min:min, max:max, step:step}),
