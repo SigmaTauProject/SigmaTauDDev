@@ -143,7 +143,7 @@ class NetWireRoot : NetWire {
 	
 	this (Parameters!(Connection.__ctor) args) {
 		con = new Connection(args);
-		_value = 0;
+		_value = con.port.value;
 		_getting = true;
 		_listening = true;
 	}
