@@ -123,6 +123,7 @@ class NetWireBranch : NetWire {
 			_value.nullify;
 	}
 	
+	mixin(GenerateFieldAccessors);
 	mixin NetPortMixin!(false, NetWireRoot);
 }
 

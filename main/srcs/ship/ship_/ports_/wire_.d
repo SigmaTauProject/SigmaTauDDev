@@ -17,8 +17,7 @@ struct WireMaster {
 		if (n != _value) {
 			_value = n;
 			_nextValue = n;
-			if (net)
-				net.onSetValue;
+			if (net) net.onSetValue;
 		}
 	}
 	
@@ -37,6 +36,8 @@ struct WireSlave {
 	float _value;
 	float _nextValue;
 	
+	NetWireConnection net;
+	
 	//---methods
 	@property float value() {
 		return _value;
@@ -52,7 +53,7 @@ abstract class NetWireConnection {
 	
 	this(WireSlave* port) {
 		this.port = port;
-		(cast(WireMaster*) port).net = this;
+		port.net = this;
 	}
 	
 	void setValue(float n) {
