@@ -74,6 +74,7 @@ class TerminalConnectionImpl : TerminalConnection {
 	//---Send
 	public {
 		void put(const(ubyte[]) msg) {
+			sentMsgID++;
 			if (connected) try {
 				socket.send(msg);
 			}
@@ -92,6 +93,7 @@ class TerminalConnectionImpl : TerminalConnection {
 			return socket.msgs[0];
 		}
 		void popFront() {
+			msgID++;
 			assert(!empty);
 			socket.msgs = socket.msgs[1..$];
 		}

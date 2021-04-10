@@ -22,7 +22,9 @@ class WirePort extends Port {
 	listeners	= []	;
 	pullListeners	= []	;
 	
-	static rpc_remote_set	= [3, SerialType.float32, ];
+	lastSetMsgID = null;
+	
+	static rpc_remote_set	= [3, SerialType.float32, SerialType.uint32, ];
 	
 	get(callback) {
 		if (this.data !== null) {
@@ -106,13 +108,21 @@ class WirePort extends Port {
 					this.last = Date.now();
 					if (this.data !== null) {
 						this.set_send(this.data.payload);
+						this.lastSetMsgID = this.server.sentMsgID;
 					}
 				}, 60-(now-this.last));
 				this.last = "callback";
 				return;
 			}
 			this.last = now;
+			
 			this.set_send(n);
+			this.lastSetMsgID = this.server.sentMsgID;
+		}
+	}
+	remote_set(n, last) {
+		if (this.lastSetMsgID > last) {
+			return;
 		}
 	}
 	remote_set(n) {

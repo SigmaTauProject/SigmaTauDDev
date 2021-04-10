@@ -51,7 +51,7 @@ class NetWireBranch : NetWire {
 	void set(float v) {
 		_value = v;
 		if (listening) {
-			set_send!TrgtClients(listeners, value.get);
+			set_send!TrgtClients(listeners, value.get, listeners.map!(l=>l.msgID).array);
 			set_send!TrgtServer(value.get);
 		}
 	}
@@ -82,7 +82,7 @@ class NetWireBranch : NetWire {
 	@RPC!SrcClient(0)
 	void __get(Client client) {
 		if (!value.isNull) {
-			set_send!TrgtClients([client], value);
+			set_send!TrgtClients([client], value.get, client.msgID);
 		}
 		else {
 			getWaiters ~= client;
@@ -95,7 +95,7 @@ class NetWireBranch : NetWire {
 		listen;
 		listeners ~= client;
 		if (!value.isNull)
-			set_send!TrgtClients([client], value);
+			set_send!TrgtClients([client], value.get, client.msgID);
 	}
 	
 	@RPC!SrcClient(2)
@@ -105,17 +105,21 @@ class NetWireBranch : NetWire {
 			listeners = listeners.remove(index -1);
 	}
 	
-	@RPC!SrcClient(3) @RPC!SrcServer(3)
-	void __set(Src)(float n) {
+	@RPC!SrcServer(3)
+	void __set(float n, uint last) {
+		assert(false, "Unimplemented");// Needs to only set if no more recent update local/client update.
+		////if (getWaiters.length) {
+		////	__set_getWaiters_send(value.get);
+		////	getWaiters = [];
+		////	_getting = false;
+		////}
+	}
+	@RPC!SrcClient(3)
+	void __set(float n) {
 		set(n);
-		static if (is(Src==SrcServer)) if (getWaiters.length) {
-			__set_getWaiters_send(value);
-			getWaiters = [];
-			_getting = false;
-		}
 	}
 	void __set_getWaiters_send(float value) {
-		set_send!TrgtClients(getWaiters, value);
+		set_send!TrgtClients(getWaiters, value, getWaiters.map!(l=>l.msgID).array);
 	}
 	
 	void update() {
@@ -135,7 +139,8 @@ class NetWireRoot : NetWire {
 		
 		override
 		void onSetValue() {
-			set_send!(TrgtClients)(listeners, port.value);
+			_value = port.value;
+			set_send!(TrgtClients)(listeners, port.value, listeners.map!(l=>l.msgID).array);
 		}
 	}
 	
@@ -154,18 +159,18 @@ class NetWireRoot : NetWire {
 	void set(float n) {
 		_value = n;
 		con.setValue(n);
-		set_send!TrgtClients(listeners, value);
+		set_send!TrgtClients(listeners, value.get, listeners.map!(l=>l.msgID).array);
 	}
 	
 	@RPC!SrcClient(0)
 	void __get(Client client) {
-		set_send!TrgtClients([client], value);
+		set_send!TrgtClients([client], value.get, client.msgID);
 	}
 	
 	@RPC!SrcClient(1)
 	void __listen(Client client) {
 		listeners ~= client;
-		set_send!TrgtClients([client], value);
+		set_send!TrgtClients([client], value.get, client.msgID);
 	}
 	@RPC!SrcClient(2)
 	void __unlisten(Client client) {

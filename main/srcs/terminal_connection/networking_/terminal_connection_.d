@@ -1,6 +1,6 @@
 module networking_.terminal_connection_;
 
-interface TerminalConnection {
+abstract class TerminalConnection {
 	//---Connected
 	public {
 		@property bool connected();
@@ -8,13 +8,13 @@ interface TerminalConnection {
 	
 	//---Send
 	public {
-		void put(const(ubyte[]) msg);
+		uint sentMsgID = 0;// First send will increment and be `1`.
+		abstract void send(const(ubyte[]) msg);
 	}
-		
+	
 	//---Receive
 	public {
-		@property bool empty();
-		@property const(const(ubyte)[]) front();
-		void popFront();
+		uint msgID = 0;// ID of last pulled msg.
+		abstract bool pullMsg(const(ubyte)[]* msg);
 	}
 }

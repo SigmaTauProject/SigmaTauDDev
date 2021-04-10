@@ -89,7 +89,8 @@ class NetBridgeRoot : NetBridge {
 	
 	void update() {
 		foreach (client; clients) {
-			foreach (msg; client) {
+			const(ubyte)[] msg;
+			while (client.pullMsg(&msg)) {
 				dispatchClientMsg(client, msg);
 			}
 		}

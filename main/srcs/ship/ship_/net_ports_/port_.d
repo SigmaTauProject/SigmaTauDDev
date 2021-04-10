@@ -68,7 +68,7 @@ class NetPort {
 	}
 	@RPCSend!TrgtClients
 	void _rpcSendClient(Client[] clients, const(ubyte)[] data) {
-		clients.each!(t=>t.put(id~data));
+		clients.each!(t=>t.send(id~data));
 	}
 	
 	abstract
