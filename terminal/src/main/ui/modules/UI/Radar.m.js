@@ -1,10 +1,13 @@
 import {div, svg, Div} from "/modules/Div.m.js";
 
+import startZoom from "/modules/Zoom.m.js";
+
 export
 class Radar {
 	el;
 	view;
 	background;
+	scale = 0.01;
 	
 	constructor({}={}) {
 		this.el = svg (
@@ -28,8 +31,12 @@ class Radar {
 				svg (	"g",
 					"radar-view",
 					(el)=>{this.view=el},
-					Div.attributes({transform:"scale(0.01)"}),
+					Div.attributes({transform:`scale(${this.scale})`}),
 				),
+				el => startZoom(el, a=>{
+					this.scale = Math.min(0.5,Math.max(0.0001,this.scale*a));
+					this.view.setAttribute("transform", `scale(${this.scale})`);
+				}),
 			),
 			svg (	"circle",
 				Div.attributes({cx:"0",cy:"0",r:"1",fill:"none",stroke:"black","stroke-width":"0.01",}),
