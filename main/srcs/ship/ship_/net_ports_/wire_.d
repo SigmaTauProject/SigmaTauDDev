@@ -81,7 +81,7 @@ class NetWireBranch : NetWire {
 	
 	@RPC!SrcClient(0)
 	void __get(Client client) {
-		if (value.isNull) {
+		if (!value.isNull) {
 			set_send!TrgtClients([client], value);
 		}
 		else {
@@ -94,7 +94,7 @@ class NetWireBranch : NetWire {
 	void __listen(Client client) {
 		listen;
 		listeners ~= client;
-		if (value.isNull)
+		if (!value.isNull)
 			set_send!TrgtClients([client], value);
 	}
 	
