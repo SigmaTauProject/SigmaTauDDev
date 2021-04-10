@@ -3,9 +3,11 @@ module ship_.bridge_;
 import ship_.components_.component_;
 
 import ship_.ports_.wire_;
+import ship_.ports_.radar_;
 
 import ship_.net_ports_.bridge_;
 import ship_.net_ports_.wire_;
+import ship_.net_ports_.radar_;
 
 class Bridge : Component {
 	NetBridgeRoot net;
@@ -21,6 +23,14 @@ class Bridge : Component {
 	void wires_plugIn(WireSlave* wire) {
 		wires ~= wire;
 		wires_ids ~= net.plugInPort(new NetWireRoot(wire));
+	}
+	
+	@SlavePort
+	RadarSlave*[] radars;
+	size_t[] radars_ids = [];
+	void radars_plugIn(RadarSlave* radar) {
+		radars ~= radar;
+		radars_ids ~= net.plugInPort(new NetRadarRoot(radar));
 	}
 	
 	mixin ComponentMixin!();

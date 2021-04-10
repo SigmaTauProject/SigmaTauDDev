@@ -56,8 +56,8 @@ class NetBridgeBranch : NetBridge {
 				////	return addPort!(PortType.wireOut);
 				////case PortType.pingOut:
 				////	return addPort!(PortType.pingOut);
-				////case PortType.radar:
-				////	return addPort!(PortType.radar);
+				case PortType.radar:
+					return addPort!(PortType.radar);
 				////case PortType.spawner:
 				////	return addPort!(PortType.spawner);
 			}

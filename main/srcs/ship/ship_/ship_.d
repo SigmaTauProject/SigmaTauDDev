@@ -15,8 +15,10 @@ import math.linear.point;
 import ship_.components_.component_;
 import ship_.bridge_;
 import ship_.components_.thruster_;
+import ship_.components_.radar_;
 
 import ship_.ports_.wire_;
+import ship_.ports_.radar_;
 
 import networking_.terminal_connection_;
 
@@ -35,7 +37,7 @@ class Ship : ship_.components_.component_.Ship {
 		world.addEntity(entity);
 		bridge = new Bridge(this);
 		
-		////bridge.connect(installComponent!Radar.port);
+		bridge.radars_plugIn(installComponent!Radar.port.slave);
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.fore).port.slave);
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.rot).port.slave);
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.side).port.slave);
