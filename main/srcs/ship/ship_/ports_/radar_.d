@@ -8,14 +8,14 @@ struct RadarMaster {
 	
 	NetRadarConnection net;
 	
-	void update(RadarEntityObject[] newEntities, uint[] removedEntities, RadarEntity[] entities_) {
+	void change(RadarEntityObject[] newEntities, uint[] removedEntities, RadarEntity[] entities_) {
 		import std.algorithm;
 		entityObjects ~= newEntities;
 		foreach(e; removedEntities)
 			entityObjects = entityObjects.remove(e);
 		entities = entities_;
 		
-		if (net) net.onUpdate(newEntities, removedEntities);
+		if (net) net.onChange(newEntities, removedEntities);
 	}
 	
 	@property
@@ -38,10 +38,10 @@ abstract class NetRadarConnection {
 	this(RadarSlave* port) {
 		this.port = port;
 		port.net = this;
-		onUpdate(port.entityObjects, cast(uint[])[]);
+		onChange(port.entityObjects, cast(uint[])[]);
 	}
 	
-	abstract void onUpdate(const RadarEntityObject[] newEntities, uint[] removedEntities);
+	abstract void onChange(const RadarEntityObject[] newEntities, uint[] removedEntities);
 }
 
 struct RadarEntityObject {

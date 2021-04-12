@@ -7,7 +7,7 @@ import std.algorithm;
 
 import ship_.net_ports_.bridge_;
 import ship_.net_ports_.wire_;
-////import ports_.ping_;
+import ship_.net_ports_.ping_;
 import ship_.net_ports_.radar_;
 ////import ports_.spawner_;
 
@@ -22,7 +22,7 @@ enum PortType : ubyte {
 	@PortClass!NetWire	wire	,
 ////	@PortClass!WireInPort	wireIn	,
 ////	@PortClass!WireOutPort	wireOut	,
-////	@PortClass!PingOutPort	pingOut	,
+	@PortClass!NetPing	ping	= 4,
 	@PortClass!NetRadar	radar	= 5,
 ////	@PortClass!SpawnerPort	spawner	,
 }

@@ -3,6 +3,7 @@ module ship_.components_.component_;
 import std.experimental.typecons;
 import std.algorithm;
 import std.range;
+import std.traits;
 
 import world_.world_;
 import world_.entity_;
@@ -24,11 +25,25 @@ class Component {
 	
 	//---private
 	abstract void _portsInternalInit();
+	abstract void _portsInternalPostUpdate();
 }
-template ComponentMixin() {
+mixin template ComponentMixin() {
 	import std.traits;
 	
 	override void _portsInternalInit() {
+		static foreach (mem; __traits(allMembers, typeof(this))) {
+			static if (hasUDA!(__traits(getMember, this, mem), MasterPort)) {
+				__traits(getMember, this, mem) = typeof(__traits(getMember, this, mem))();
+				static if (hasMember!(typeof(__traits(getMember, this, mem)), "initialize"))
+					__traits(getMember, this, mem).initialize;
+			}
+		}
+	}
+	override void _portsInternalPostUpdate() {
+		static foreach (mem; __traits(allMembers, typeof(this)))
+			static if (hasUDA!(__traits(getMember, this, mem), MasterPort))
+				static if (hasMember!(typeof(__traits(getMember, this, mem)), "update"))
+					__traits(getMember, this, mem).update;
 	}
 }
 

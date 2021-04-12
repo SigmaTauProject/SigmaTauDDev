@@ -16,9 +16,7 @@ import ship_.components_.component_;
 import ship_.bridge_;
 import ship_.components_.thruster_;
 import ship_.components_.radar_;
-
-import ship_.ports_.wire_;
-import ship_.ports_.radar_;
+import ship_.components_.missile_tube_;
 
 import networking_.terminal_connection_;
 
@@ -42,12 +40,15 @@ class Ship : ship_.components_.component_.Ship {
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.rot).port.slave);
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.side).port.slave);
 		////bridge.connect(installComponent!Spawner.port);
-		////bridge.connect(installComponent!MissileTube.port);
+		bridge.pings_plugIn(installComponent!MissileTube.port.slave);
 	}
 	
 	void update() {
 		foreach (c; allComponents) {
 			c.update;
+		}
+		foreach (c; allComponents) {
+			c._portsInternalPostUpdate;
 		}
 	}
 	

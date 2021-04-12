@@ -13,6 +13,7 @@ import ship_.bridge_;
 import ship_.net_ports_.port_;
 import ship_.net_ports_.bridge_;
 import ship_.net_ports_.wire_;
+import ship_.net_ports_.ping_;
 
 abstract
 class NetBridge : NetPort {
@@ -54,8 +55,8 @@ class NetBridgeBranch : NetBridge {
 				////	return addPort!(PortType.wireIn);
 				////case PortType.wireOut:
 				////	return addPort!(PortType.wireOut);
-				////case PortType.pingOut:
-				////	return addPort!(PortType.pingOut);
+				case PortType.ping:
+					return addPort!(PortType.ping);
 				case PortType.radar:
 					return addPort!(PortType.radar);
 				////case PortType.spawner:

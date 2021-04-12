@@ -128,7 +128,7 @@ class NetRadarRoot : NetRadar {
 		}
 		
 		override
-		void onUpdate(const RadarEntityObject[] newEntities, uint[] removedEntities) {
+		void onChange(const RadarEntityObject[] newEntities, uint[] removedEntities) {
 			_entityObjects = cast(RadarEntityObject[]) port.entityObjects;
 			_entities = cast(RadarEntity[]) port.entities;
 			

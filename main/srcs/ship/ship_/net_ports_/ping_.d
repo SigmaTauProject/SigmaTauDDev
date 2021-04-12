@@ -1,4 +1,4 @@
-module ship_.net_ports_.wire_; 
+module ship_.net_ports_.ping_; 
 
 import accessors;
 import std.traits;
@@ -9,17 +9,17 @@ import std.typecons;
 import treeserial;
 import structuredrpc;
 
-import ship_.ports_.wire_;
+import ship_.ports_.ping_;
 
 import ship_.net_ports_.port_;
 
 abstract
-class NetWire : NetPort {
+class NetPing : NetPort {
 	this() {
 		this_!(typeof(this));
 	}
 	@ConstRead {
-		Nullable!float _value;
+		Nullable!ubyte _pings;
 		bool _getting;
 		ubyte _listening;
 	}
@@ -32,13 +32,13 @@ class NetWire : NetPort {
 	void unlisten() {}
 	
 	abstract
-	void set(float n);
+	void ping();
 	
-	alias Branch = NetWireBranch;
-	alias Root = NetWireRoot;
+	alias Branch = NetPingBranch;
+	alias Root = NetPingRoot;
 }
 
-class NetWireBranch : NetWire {
+class NetPingBranch : NetPing {
 	Client[] getWaiters;
 	Client[] listeners;
 	
@@ -48,18 +48,18 @@ class NetWireBranch : NetWire {
 	}
 	
 	override
-	void set(float v) {
-		_value = v;
+	void ping() {
+		_pings = cast(ubyte) (_pings.get + 1);
 		if (listening) {
-			set_send!TrgtClients(listeners, value.get, listeners.map!(l=>l.msgID).array);
-			set_send!TrgtServer(value.get);
+			ping_send!TrgtClients(listeners);
+			ping_send!TrgtServer();
 		}
 	}
 	
 	override
 	void get() {
 		if (!getting && !listening) {
-			get_send!TrgtServer();
+			ping_send!TrgtServer();
 			_getting = true;
 		}
 	}
@@ -79,8 +79,8 @@ class NetWireBranch : NetWire {
 	
 	@RPC!SrcClient(0)
 	void __get(Client client) {
-		if (!value.isNull) {
-			set_send!TrgtClients([client], value.get, client.msgID);
+		if (!pings.isNull && pings.get) {
+			ping_send!TrgtClients([client]);
 		}
 		else {
 			getWaiters ~= client;
@@ -92,8 +92,9 @@ class NetWireBranch : NetWire {
 	void __listen(Client client) {
 		listen;
 		listeners ~= client;
-		if (!value.isNull)
-			set_send!TrgtClients([client], value.get, client.msgID);
+		if (!pings.isNull)
+			foreach (_; 0..pings.get)
+				ping_send!TrgtClients([client]);
 	}
 	
 	@RPC!SrcClient(2)
@@ -104,71 +105,80 @@ class NetWireBranch : NetWire {
 	}
 	
 	@RPC!SrcServer(3)
-	void __set(float n, uint last) {
-		assert(false, "Unimplemented");// Needs to only set if no more recent update local/client update.
+	void __ping() {
+		assert(false, "Unimplemented");
 		////if (getWaiters.length) {
-		////	__set_getWaiters_send(value.get);
+		////	__set_getWaiters_send(pings.get);
 		////	getWaiters = [];
 		////	_getting = false;
 		////}
 	}
 	@RPC!SrcClient(3)
-	void __set(float n) {
-		set(n);
+	void __ping_() {
+		ping();
 	}
-	void __set_getWaiters_send(float value) {
-		set_send!TrgtClients(getWaiters, value, getWaiters.map!(l=>l.msgID).array);
+	void __ping_getWaiters_send() {
+		ping_send!TrgtClients(getWaiters);
 	}
 	
 	void update() {
 		if (!listening)
-			_value.nullify;
+			_pings.nullify;
 	}
 	
 	mixin(GenerateFieldAccessors);
-	mixin NetPortMixin!(false, NetWireRoot);
+	mixin NetPortMixin!(false, NetPingRoot);
 }
 
-class NetWireRoot : NetWire {
-	class Connection : NetWireConnection {
-		this(Parameters!(NetWireConnection.__ctor) args) {
+class NetPingRoot : NetPing {
+	class Connection : NetPingConnection {
+		this(Parameters!(NetPingConnection.__ctor) args) {
 			super(args);
 		}
 		
 		override
-		void onSetValue() {
-			_value = port.value;
-			set_send!(TrgtClients)(listeners, port.value, listeners.map!(l=>l.msgID).array);
+		void onPing() {
+			_pings = cast(ubyte) (_pings.get + 1);
+			ping_send!(TrgtClients)(getWaiters);
+			getWaiters.length = 0;
+			ping_send!(TrgtClients)(listeners);
 		}
 	}
 	
 	Connection con;
+	Client[] getWaiters;
 	Client[] listeners;
 	
 	this (Parameters!(Connection.__ctor) args) {
 		con = new Connection(args);
-		_value = con.port.value;
+		_pings = con.port.pings;
 		_getting = true;
 		_listening = true;
 	}
 	
 	override
 	@RPC!SrcClient(3)
-	void set(float n) {
-		_value = n;
-		con.setValue(n);
-		set_send!TrgtClients(listeners, value.get, listeners.map!(l=>l.msgID).array);
+	void ping() {
+		_pings = cast(ubyte) (_pings.get + 1);
+		con.ping();
+		ping_send!(TrgtClients)(getWaiters);
+		getWaiters.length = 0;
+		ping_send!TrgtClients(listeners);
 	}
 	
 	@RPC!SrcClient(0)
 	void __get(Client client) {
-		set_send!TrgtClients([client], value.get, client.msgID);
+		if (_pings.get)
+			ping_send!TrgtClients([client]);
+		else
+			getWaiters ~= client;
 	}
 	
 	@RPC!SrcClient(1)
 	void __listen(Client client) {
 		listeners ~= client;
-		set_send!TrgtClients([client], value.get, client.msgID);
+		foreach (_; 0.._pings.get)
+			ping_send!TrgtClients([client]);
 	}
 	@RPC!SrcClient(2)
 	void __unlisten(Client client) {
@@ -177,5 +187,5 @@ class NetWireRoot : NetWire {
 	}
 	
 	mixin(GenerateFieldAccessors);
-	mixin NetPortMixin!(true, NetWireBranch);
+	mixin NetPortMixin!(true, NetPingBranch);
 }

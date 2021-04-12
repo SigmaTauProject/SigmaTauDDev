@@ -3,10 +3,12 @@ module ship_.bridge_;
 import ship_.components_.component_;
 
 import ship_.ports_.wire_;
+import ship_.ports_.ping_;
 import ship_.ports_.radar_;
 
 import ship_.net_ports_.bridge_;
 import ship_.net_ports_.wire_;
+import ship_.net_ports_.ping_;
 import ship_.net_ports_.radar_;
 
 class Bridge : Component {
@@ -23,6 +25,14 @@ class Bridge : Component {
 	void wires_plugIn(WireSlave* wire) {
 		wires ~= wire;
 		wires_ids ~= net.plugInPort(new NetWireRoot(wire));
+	}
+	
+	@SlavePort
+	PingSlave*[] pings;
+	size_t[] pings_ids = [];
+	void pings_plugIn(PingSlave* ping) {
+		pings ~= ping;
+		pings_ids ~= net.plugInPort(new NetPingRoot(ping));
 	}
 	
 	@SlavePort

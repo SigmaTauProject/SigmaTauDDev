@@ -39,7 +39,7 @@ class Radar : Component {
 				entities = entities.remove(i);
 			}
 		}
-		port.update(
+		port.change(
 			ship.world.newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array,
 			removedEntities,
 			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array,
