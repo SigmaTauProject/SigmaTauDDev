@@ -14,6 +14,7 @@ import world_.physics_world_;
 class World {
 	PhysicsWorld physicsWorld;
 	Entity[] newEntities = [];
+	Entity[] nextEntities = [];
 	
 	this() {
 		physicsWorld = new PhysicsWorld;
@@ -27,12 +28,20 @@ class World {
 	void update() {
 		newEntities.length = 0;
 		newEntities.assumeSafeAppend;
+		
+		foreach (entity; nextEntities) {
+			physicsWorld.entities ~= entity;
+			newEntities ~= entity;
+		}
+		
+		nextEntities.length = 0;
+		nextEntities.assumeSafeAppend;
+		
 		physicsWorld.update;
 	}
 	
 	void addEntity(Entity entity) {
-		physicsWorld.entities ~= entity;
-		newEntities ~= entity;
+		nextEntities ~= entity;
 	}
 }
 
