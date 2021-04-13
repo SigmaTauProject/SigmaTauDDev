@@ -58,13 +58,14 @@ class TerminalConnectionImpl : TerminalConnection {
 	WebSocketConnection socket;
 	const(ubyte)[][] msgs = [];
 	
-	@property bool connected() {
+	@property override bool connected() {
 		return socket.isConnected;
 	}
 	
 	//---Send
 	public {
-		void put(const(ubyte[]) msg) {
+		override void send(const(ubyte[]) msg) {
+			sentMsgID++;
 			if (connected) {
 				socket.sendData(cast(byte[]) msg.dup);
 			}
@@ -73,15 +74,13 @@ class TerminalConnectionImpl : TerminalConnection {
 		
 	//---Receive
 	public {
-		@property bool empty() {
-			return msgs.length == 0;
-		}
-		@property const(ubyte)[] front() {
-			return msgs[0];
-		}
-		void popFront() {
-			assert(!empty);
+		override bool pullMsg(const(ubyte)[]* msg) {
+			if (!msgs.length)
+				return false;
+			msgID++;
+			*msg = msgs[0];
 			msgs = msgs[1..$];
+			return true;
 		}
 	}
 	

@@ -21,13 +21,13 @@ class WireKeys {
 			window.addEventListener("keyup",(e)=>{
 				if (e.code == key) {
 					keyDown = false;
-					if (snap != null && ((max>0 && valuePtr.payload>0) || (max<0 && valuePtr.payload<0)))
+					if ((max>snap && valuePtr.payload>snap) || (max<snap && valuePtr.payload<snap))
 						wirePort.set(snap);
 					e.preventDefault();
 				}
 				else if (e.code == negKey) {
 					negKeyDown = false;
-					if (snap != null && ((min>0 && valuePtr.payload>0) || (min<0 && valuePtr.payload<0)))
+					if ((min>snap && valuePtr.payload>snap) || (min<snap && valuePtr.payload<snap))
 						wirePort.set(snap);
 					e.preventDefault();
 				}
