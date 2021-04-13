@@ -24,6 +24,7 @@ class Component {
 	void update() {}
 	
 	//---private
+	abstract void _update();
 	abstract void _portsInternalInit();
 	abstract void _portsInternalPostUpdate();
 }
@@ -44,6 +45,17 @@ mixin template ComponentMixin() {
 			static if (hasUDA!(__traits(getMember, this, mem), MasterPort))
 				static if (hasMember!(typeof(__traits(getMember, this, mem)), "update"))
 					__traits(getMember, this, mem).update;
+	}
+	override void _update() {
+		static foreach (mem; __traits(allMembers, typeof(this)))
+			static if (hasUDA!(__traits(getMember, this, mem), MasterPort))
+				static if (hasMember!(typeof(__traits(getMember, this, mem)), "earlyUpdate"))
+					__traits(getMember, this, mem).earlyUpdate;
+		this.update;
+		static foreach (mem; __traits(allMembers, typeof(this)))
+			static if (hasUDA!(__traits(getMember, this, mem), MasterPort))
+				static if (hasMember!(typeof(__traits(getMember, this, mem)), "midUpdate"))
+					__traits(getMember, this, mem).midUpdate;
 	}
 }
 

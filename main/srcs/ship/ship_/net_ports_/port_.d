@@ -9,7 +9,7 @@ import ship_.net_ports_.bridge_;
 import ship_.net_ports_.wire_;
 import ship_.net_ports_.ping_;
 import ship_.net_ports_.radar_;
-////import ports_.spawner_;
+import ship_.net_ports_.spawner_;
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
@@ -24,7 +24,7 @@ enum PortType : ubyte {
 ////	@PortClass!WireOutPort	wireOut	,
 	@PortClass!NetPing	ping	= 4,
 	@PortClass!NetRadar	radar	= 5,
-////	@PortClass!SpawnerPort	spawner	,
+	@PortClass!NetSpawner	spawner	,
 }
 mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
 enum enumMemberUDAFixMixin(string enumName) = q{

@@ -5,11 +5,13 @@ import ship_.components_.component_;
 import ship_.ports_.wire_;
 import ship_.ports_.ping_;
 import ship_.ports_.radar_;
+import ship_.ports_.spawner_;
 
 import ship_.net_ports_.bridge_;
 import ship_.net_ports_.wire_;
 import ship_.net_ports_.ping_;
 import ship_.net_ports_.radar_;
+import ship_.net_ports_.spawner_;
 
 class Bridge : Component {
 	NetBridgeRoot net;
@@ -41,6 +43,14 @@ class Bridge : Component {
 	void radars_plugIn(RadarSlave* radar) {
 		radars ~= radar;
 		radars_ids ~= net.plugInPort(new NetRadarRoot(radar));
+	}
+	
+	@SlavePort
+	SpawnerSlave*[] spawners;
+	size_t[] spawners_ids = [];
+	void spawners_plugIn(SpawnerSlave* spawner) {
+		spawners ~= spawner;
+		spawners_ids ~= net.plugInPort(new NetSpawnerRoot(spawner));
 	}
 	
 	mixin ComponentMixin!();

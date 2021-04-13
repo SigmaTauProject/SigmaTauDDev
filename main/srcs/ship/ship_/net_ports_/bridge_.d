@@ -59,8 +59,8 @@ class NetBridgeBranch : NetBridge {
 					return addPort!(PortType.ping);
 				case PortType.radar:
 					return addPort!(PortType.radar);
-				////case PortType.spawner:
-				////	return addPort!(PortType.spawner);
+				case PortType.spawner:
+					return addPort!(PortType.spawner);
 			}
 		}
 		__plugInPorts(types.map!((PortType t)=>addPort(t)).array);
