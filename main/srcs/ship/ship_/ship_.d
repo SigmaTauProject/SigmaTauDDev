@@ -12,12 +12,17 @@ import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
+//---Components
 import ship_.components_.component_;
 import ship_.bridge_;
+
 import ship_.components_.thruster_;
 import ship_.components_.radar_;
 import ship_.components_.missile_tube_;
 import ship_.components_.spawner_;
+
+import ship_.components_.rotation_controller_;
+//---
 
 import networking_.terminal_connection_;
 
@@ -38,7 +43,12 @@ class Ship : ship_.components_.component_.Ship {
 		
 		bridge.radars_plugIn(installComponent!Radar.port.slave);
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.fore).port.slave);
-		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.rot).port.slave);
+		
+		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
+		auto rotCon = installComponent!RotationController;
+		rotCon.thrusterPort = rotThrust.port.slave;
+		bridge.wires_plugIn(rotCon.controlPort.slave);
+		
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.side).port.slave);
 		bridge.pings_plugIn(installComponent!MissileTube.port.slave);
 		bridge.spawners_plugIn(installComponent!Spawner.port.slave);
