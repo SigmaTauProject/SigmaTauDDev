@@ -26,7 +26,7 @@ void main() {
 		world.addEntity(entity);
 		world.physicsWorld.gravityWells ~= entity;
 	}
-	world.addEntity(new Entity(stationObject, pvec(0L,64.fromFloat!long),vec(8.fromFloat!int,0), 16384*0));
+	world.addEntity(new Entity(stationObject, pvec(0L,128.fromFloat!long),vec((0.5).fromFloat!int,0), 16384*0));
 	
 	auto ship = new Ship(world);
 	
