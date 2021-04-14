@@ -1,5 +1,6 @@
 .slider-outer {
 	margin	:	10px	;
+	float	:	left	;
 }
 .slider {
 	margin	:	0	;
@@ -22,6 +23,15 @@
 	
 	left	:	-115px	;
 	top	:	115px	;
+}
+.slider-value {
+	position	:	absolute	;
+	width	:	100%	;
+	text-align	:	center	;
+	bottom: clamp(5%, calc(calc(var(--value, 50%) * 0.8) + 10%), 95%);
+	transform: translateY(50%);
+	color	:	#fff	;
+	pointer-events	:	none	;
 }
 
 input[type=range].slider {
