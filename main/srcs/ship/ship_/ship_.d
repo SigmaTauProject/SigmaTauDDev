@@ -22,6 +22,7 @@ import ship_.components_.missile_tube_;
 import ship_.components_.spawner_;
 
 import ship_.components_.rotation_controller_;
+import ship_.components_.heading_controller_;
 //---
 
 import networking_.terminal_connection_;
@@ -41,16 +42,24 @@ class Ship : ship_.components_.component_.Ship {
 		world.addEntity(entity);
 		bridge = new Bridge(this);
 		
-		bridge.radars_plugIn(installComponent!Radar.port.slave);
-		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.fore).port.slave);
-		
 		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
 		auto rotCon = installComponent!RotationController;
 		rotCon.thrusterPort = rotThrust.port.slave;
-		bridge.wires_plugIn(rotCon.controlPort.slave);
+		auto headCon = installComponent!HeadingController;
+		headCon.rotationControllerPort = rotCon.controlPort.slave;
 		
+		bridge.radars_plugIn(installComponent!Radar.port.slave);
+		
+		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.fore).port.slave);
+		bridge.wires_plugIn(rotCon.controlPort.slave);
 		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.side).port.slave);
+		
 		bridge.pings_plugIn(installComponent!MissileTube.port.slave);
+		
+		bridge.wires_plugIn(headCon.controlPort.slave);
+		bridge.wires_plugIn(rotCon.controlPort.slave);
+		bridge.wires_plugIn(rotThrust.port.slave);
+		
 		bridge.spawners_plugIn(installComponent!Spawner.port.slave);
 	}
 	
