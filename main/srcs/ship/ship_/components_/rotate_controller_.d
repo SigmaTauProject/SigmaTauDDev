@@ -1,4 +1,4 @@
-module ship_.components_.rotation_controller_;
+module ship_.components_.rotate_controller_;
 
 import std.experimental.typecons;
 import std.algorithm;
@@ -16,7 +16,7 @@ import ship_.components_.component_;
  
 import ship_.ports_.wire_; 
 
-class RotationController : Component {
+class RotateController : Component {
 	@MasterPort
 	WireMaster controlPort;
 	@SlavePort

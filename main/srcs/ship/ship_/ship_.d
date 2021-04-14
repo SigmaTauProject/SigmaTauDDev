@@ -21,7 +21,7 @@ import ship_.components_.radar_;
 import ship_.components_.missile_tube_;
 import ship_.components_.spawner_;
 
-import ship_.components_.rotation_controller_;
+import ship_.components_.rotate_controller_;
 import ship_.components_.heading_controller_;
 //---
 
@@ -43,7 +43,7 @@ class Ship : ship_.components_.component_.Ship {
 		bridge = new Bridge(this);
 		
 		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
-		auto rotCon = installComponent!RotationController;
+		auto rotCon = installComponent!RotateController;
 		rotCon.thrusterPort = rotThrust.port.slave;
 		auto headCon = installComponent!HeadingController;
 		headCon.rotationControllerPort = rotCon.controlPort.slave;
