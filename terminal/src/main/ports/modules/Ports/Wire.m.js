@@ -124,8 +124,6 @@ class WirePort extends Port {
 		if (this.lastSetMsgID > last) {
 			return;
 		}
-	}
-	remote_set(n) {
 		if (this.data !== null) {
 			this.data.payload = n;
 		}
