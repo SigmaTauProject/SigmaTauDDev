@@ -10,8 +10,7 @@ import world_.entity_object_;
 import math.linear.vector;
 import math.linear.point;
 
-import ship_.ship_;
-import networking_.terminal_networking_;
+import player_ship_;
 
 import core.time;
 import std.datetime;
@@ -19,7 +18,6 @@ import core.thread;
 
 void main() {
 	World world = new World;
-	auto terminalServer = new TerminalServer();
 	
 	{
 		auto entity = new Entity(planetObject, pvec(0L,0),vec(0,0), 16384*0);
@@ -28,17 +26,14 @@ void main() {
 	}
 	world.addEntity(new Entity(stationObject, pvec(0L,128.fromFloat!long),vec((0.5).fromFloat!int,0), 16384*0));
 	
-	auto ship = new Ship(world);
+	auto ships = [new PlayerShip(8080, world), new PlayerShip(8081, world)];
 	
 	while (true) {
 		auto loopStartTime = MonoTime.currTime;
-		terminalServer.update;
+		
+		ships.each!(ship=>ship.call);
+		
 		world.update;
-		auto newClients = terminalServer.getNewTerminals;
-		if (newClients.length)
-			ship.bridge.net.newClients(newClients);
-		ship.bridge.net.update;
-		ship.update();
 		
 		Thread.sleep(max(0.msecs, 100.msecs - (MonoTime.currTime - loopStartTime)));
 		////if (readln()=="q")

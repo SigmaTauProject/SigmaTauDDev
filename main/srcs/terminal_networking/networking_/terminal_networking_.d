@@ -20,9 +20,9 @@ class TerminalServer {
 	
 	TerminalConnection[] newTerminals;
 	
-	this() {
+	this(ushort port) {
 		server = HttpServer.builder()
-		.setListener(8080, "0.0.0.0")
+		.setListener(port, "0.0.0.0")
 		.websocket("/ws", new class AbstractWebSocketMessageHandler {
 			override void onOpen(WebSocketConnection connection) {
 				auto newTerm = new TerminalConnectionImpl(connection);
