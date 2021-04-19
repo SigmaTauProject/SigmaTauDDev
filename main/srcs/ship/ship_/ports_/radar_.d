@@ -1,47 +1,26 @@
 module ship_.ports_.radar_;
 
+import std.algorithm;
 
-struct RadarMaster {
+struct RadarPort {
+	RadarPort**[] connections;
+	
 	//---POD
 	RadarEntityObject[]	entityObjects	;
 	RadarEntity[]	entities	;
 	
-	NetRadarConnection net;
+	RadarEntityObject[]	newEntities	;
+	uint[]	removedEntities	;
 	
-	void change(RadarEntityObject[] newEntities, uint[] removedEntities, RadarEntity[] entities_) {
-		import std.algorithm;
+	void change(RadarEntityObject[] newEntities, uint[] removedEntities, RadarEntity[] entities) {
 		entityObjects ~= newEntities;
 		foreach(e; removedEntities)
 			entityObjects = entityObjects.remove(e);
-		entities = entities_;
 		
-		if (net) net.onChange(newEntities, removedEntities);
+		this.entities	= entities	;
+		this.newEntities	= newEntities	;
+		this.removedEntities	= removedEntities	;
 	}
-	
-	@property
-	RadarSlave* slave() {
-		return cast(RadarSlave*) &this;
-	}
-}
-
-struct RadarSlave {
-	//---POD
-	const RadarEntityObject[]	entityObjects	;
-	const RadarEntity[]	entities	;
-	
-	NetRadarConnection net;
-}
-
-abstract class NetRadarConnection {
-	RadarSlave* port;
-	
-	this(RadarSlave* port) {
-		this.port = port;
-		port.net = this;
-		onChange(port.entityObjects, cast(uint[])[]);
-	}
-	
-	abstract void onChange(const RadarEntityObject[] newEntities, uint[] removedEntities);
 }
 
 struct RadarEntityObject {

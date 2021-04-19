@@ -12,15 +12,15 @@ import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
-import ship_.components_.component_;
+import ship_.component_;
  
 import ship_.ports_.wire_; 
 
 class HeadingController : Component {
-	@MasterPort
-	WireMaster controlPort;
-	@SlavePort
-	WireSlave* rotationControllerPort;
+	@Port
+	WirePort* controlPort;
+	@Port
+	WirePort* rotationControllerPort;
 	
 	this(Ship ship) {
 		super(ship);

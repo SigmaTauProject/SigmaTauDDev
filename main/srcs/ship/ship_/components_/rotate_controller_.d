@@ -12,15 +12,15 @@ import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
-import ship_.components_.component_;
+import ship_.component_;
  
 import ship_.ports_.wire_; 
 
 class RotateController : Component {
-	@MasterPort
-	WireMaster controlPort;
-	@SlavePort
-	WireSlave* thrusterPort;
+	@Port
+	WirePort* controlPort;
+	@Port
+	WirePort* thrusterPort;
 	
 	this(Ship ship) {
 		super(ship);

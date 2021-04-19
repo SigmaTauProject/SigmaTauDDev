@@ -1,15 +1,15 @@
-module ship_.net_ports_.port_;
+module ship_.net_.port_;
 
 import treeserial;
 import structuredrpc;
 import std.traits;
 import std.algorithm;
 
-import ship_.net_ports_.bridge_;
-import ship_.net_ports_.wire_;
-import ship_.net_ports_.ping_;
-import ship_.net_ports_.radar_;
-import ship_.net_ports_.spawner_;
+import ship_.net_.ports_.bridge_;
+import ship_.net_.ports_.wire_;
+import ship_.net_.ports_.ping_;
+import ship_.net_.ports_.radar_;
+import ship_.net_.ports_.spawner_;
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
@@ -17,6 +17,7 @@ struct PortClass(alias Class) {
 	alias PortClass = Class;
 }
 
+// TODO: Remove enum PortType @PortClass as that is done by string of name now.
 enum PortType : ubyte {
 	@PortClass!NetBridge	bridge	,
 	@PortClass!NetWire	wire	,
@@ -41,16 +42,20 @@ alias TrgtClients = SrcServer;
 
 abstract
 class NetPort {
-	PortType type;
-	ubyte id;
+	const PortType type;
+	const ubyte id;
 	
-	// this is not a normal constructor because I was having problems calling a templated `super` constructor.
-	void this_(This)() {
-		// Magic to automatically set PortType; using Type and PortClass UDA defined on PortType members.
-		static foreach(type; EnumMembers!PortType) {
-			static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!This).length)
-				this.type = type;
-		}
+	this(PortType type, ubyte id) {
+		this.type = type;
+		this.id = id;
+	}
+	
+	void update() {}
+	void postUpdate() {}
+	
+	@property
+	void* portPointer() {
+		assert(false);
 	}
 	
 	auto safeCast(PortType toType)() {
@@ -77,10 +82,24 @@ class NetPort {
 	void recvClientMsg(Client client, const(ubyte)[] msg);
 }
 
+template portType(This) {
+	// Magic to automatically set PortType; using Type and PortClass UDA defined on PortType members.
+	static foreach(type; EnumMembers!PortType) {
+		static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!(This.RootT)).length)
+			enum portType = type;
+	}
+}
+
 mixin template NetPortMixin(bool isRoot, Other) {
 	import std.traits;
 	import treeserial;
 	import structuredrpc;
+	
+	static if (__traits(hasMember, typeof(this), "port"))
+	override @property
+	void* portPointer() {
+		return this.port;
+	}
 	
 	static if (isRoot) {
 		alias RootT = typeof(this);

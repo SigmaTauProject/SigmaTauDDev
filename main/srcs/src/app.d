@@ -4,6 +4,8 @@ import std.string;
 import std.exception;
 import std.algorithm;
 
+import sigtrace;
+
 import world_.world_;
 import world_.entity_;
 import world_.entity_object_;

@@ -11,13 +11,13 @@ import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
-import ship_.components_.component_;
+import ship_.component_;
  
 import ship_.ports_.spawner_;
 
 class Spawner : Component {
-	@MasterPort
-	SpawnerMaster port;
+	@Port
+	SpawnerPort* port;
 	
 	this(Ship ship) {
 		super(ship);

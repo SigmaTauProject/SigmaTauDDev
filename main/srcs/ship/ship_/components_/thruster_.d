@@ -11,14 +11,14 @@ import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
-import ship_.components_.component_;
+import ship_.component_;
  
 import ship_.ports_.wire_;
 
 abstract
 class ThrusterBase : Component {
-	@MasterPort
-	WireMaster port;
+	@Port
+	WirePort* port;
 	
 	this(Ship ship) {
 		super(ship);
