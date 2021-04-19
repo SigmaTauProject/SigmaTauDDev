@@ -8,6 +8,7 @@ targetPath	"../dist"
 workingDirectory	"../dist"
 sourcePaths	"srcs/src"
 importPaths	"srcs/src"
+stringImportPaths	"stringImports"
 preBuildCommands	"rm -r ../dist || true"
 
 subPackage {
@@ -16,12 +17,28 @@ subPackage {
 	targetPath	"../dist"
 	sourcePaths	"srcs/ship"
 	importPaths	"srcs/ship"
+	stringImportPaths	"stringImports"
 	
 	dependency "cst" version="~>1.0"
 	dependency "tau" version="~>1.0"
 	
-	dependency "sigma_tau:terminal_connection" version="*"
 	dependency "sigma_tau:world" version="*"
+	
+	dependency "accessors" version="~>1.2"
+}
+subPackage {
+	name	"ship_net"
+	targetType	"library"
+	targetPath	"../dist"
+	sourcePaths	"srcs/ship_net"
+	importPaths	"srcs/ship_net"
+	stringImportPaths	"stringImports"
+	
+	dependency "cst" version="~>1.0"
+	dependency "tau" version="~>1.0"
+	
+	dependency "sigma_tau:ship" version="*"
+	dependency "sigma_tau:terminal_connection" version="*"
 	
 	dependency "accessors" version="~>1.2"
 	dependency "treeserial" version="~>1.0.0-alpha.4"
@@ -96,6 +113,7 @@ subPackage {
 }
 
 dependency "sigma_tau:ship" version="*"
+dependency "sigma_tau:ship_net" version="*"
 dependency "sigma_tau:terminal_networking" version="*"
 dependency "sigma_tau:terminal_connection" version="*"
 dependency "sigma_tau:world" version="*"

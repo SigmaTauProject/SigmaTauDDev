@@ -53,10 +53,11 @@ class Bridge extends Port {
 	}
 	
 	//---Messages
-	static rpc_addPorts	= [0, SerialType.array(SerialType.uint8)];
+	static rpc_updatePorts	= [0, SerialType.array(SerialType.uint8), SerialType.array(SerialType.uint8)];
 	
-	addPorts(types) {
-		types.forEach(t=>this.addPort(t));
+	updatePorts(removed, added) {
+		removed.forEach(r=>this.ports[r] = 0);
+		added.forEach(t=>this.addPort(t));
 	}
 	
 	addPort(type) {
@@ -85,9 +86,15 @@ class Bridge extends Port {
 	
 	addNewPortToPorts(port) {
 		console.assert(this.ports.length <= 255);
-		port.id = this.ports.length;
 		port.server = this.server;
-		this.ports.push(port);
+		port.id = this.ports.indexOf(null);
+		if (port.id == -1) {
+			port.id = this.ports.length;
+			this.ports.push(port);
+		}
+		else {
+			this.ports[port.id] = port;
+		}
 		if (port.type == PortType.wire) {
 			document.body.appendChild(new Slider(port).el);
 			if (wirePortKeys.length)

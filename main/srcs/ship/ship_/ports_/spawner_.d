@@ -1,50 +1,30 @@
 module ship_.ports_.spawner_;
 
 
-struct SpawnerMaster {
+struct SpawnerPort {
+	SpawnerPort**[] connections;
+	
 	//---POD
 	SpawnInfo[] _spawns = [];
-	
-	NetSpawnerConnection net;
+	SpawnInfo[] _nextSpawns = [];
 	
 	//---methods
 	@property SpawnInfo[] spawns() {
 		return _spawns;
 	}
 	
-	void midUpdate() {
-		_spawns.length = 0;
-		_spawns.assumeSafeAppend;
-	}
-	
-	@property
-	SpawnerSlave* slave() {
-		return cast(SpawnerSlave*) &this;
-	}
-}
-
-struct SpawnerSlave {
-	//---POD
-	SpawnInfo[] _spawns;
-	
-	NetSpawnerConnection net;
-	
-	//---methods
 	void spawn(SpawnInfo info) {
 		_spawns ~= info;
 	}
-}
-
-abstract class NetSpawnerConnection {
-	SpawnerSlave* port;
 	
-	this(SpawnerSlave* port) {
-		this.port = port;
-		port.net = this;
-	}
-	
-	void spawn(SpawnInfo info) {
-		port._spawns ~= info;
+	//---special
+	void update() {
+		_spawns.length = 0;
+		_spawns.assumeSafeAppend;
+		
+		auto _hold = _spawns;
+		_spawns = _nextSpawns;
+		_nextSpawns = _hold;
 	}
 }
 

@@ -56,6 +56,7 @@ import math.linear.vector;
 import math.linear.point;
 
 import ship_.ship_;
+import ship_.net_.ports_.bridge_;
 import networking_.terminal_networking_;
 
 class PlayerShip : Fiber {
@@ -70,17 +71,20 @@ class PlayerShip : Fiber {
 	void run() {
 		auto terminalServer = new TerminalServer(port);
 		auto ship = new Ship(world);
+		auto netBridge = new NetBridge(ship.bridge);
 		
 		while (true) {
+			netBridge.updateSend;
+			
 			yield;
 			
 			terminalServer.update;
-			
 			auto newClients = terminalServer.getNewTerminals;
 			if (newClients.length)
-				ship.bridge.net.newClients(newClients);
-			ship.bridge.net.update;
-			ship.update();
+				netBridge.newClients(newClients);
+			netBridge.update;
+			
+			ship.update;
 		}
 	}
 }

@@ -3,6 +3,8 @@ module ship_.ship_;
 import std.algorithm;
 import std.range;
 import accessors;
+import std.traits;
+import std.typecons;
 
 import world_.world_;
 import world_.entity_;
@@ -13,9 +15,9 @@ import math.linear.vector;
 import math.linear.point;
 
 //---Components
-import ship_.components_.component_;
-import ship_.bridge_;
+import ship_.component_;
 
+import ship_.components_.bridge_;
 import ship_.components_.thruster_;
 import ship_.components_.radar_;
 import ship_.components_.missile_tube_;
@@ -25,12 +27,10 @@ import ship_.components_.rotate_controller_;
 import ship_.components_.heading_controller_;
 //---
 
-import networking_.terminal_connection_;
-
-class Ship : ship_.components_.component_.Ship {
+class Ship : ship_.component_.Ship {
 	Component[] allComponents = [];
 	Bridge bridge;
-	TerminalConnection[] terminals = [];
+	Tuple!(void*, void delegate())[] allPorts;
 	
 	// Inherited from ship_.components_.Ship
 	//World world;
@@ -44,32 +44,97 @@ class Ship : ship_.components_.component_.Ship {
 		
 		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
 		auto rotCon = installComponent!RotateController;
-		rotCon.thrusterPort = rotThrust.port.slave;
+		connect(rotCon.thrusterPort, rotThrust.port);
 		auto headCon = installComponent!HeadingController;
-		headCon.rotationControllerPort = rotCon.controlPort.slave;
+		connect(headCon.rotationControllerPort, rotCon.controlPort);
 		
-		bridge.radars_plugIn(installComponent!Radar.port.slave);
-		
-		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.fore).port.slave);
-		bridge.wires_plugIn(rotCon.controlPort.slave);
-		bridge.wires_plugIn(installComponent!DirectThruster(DirectThruster.Type.side).port.slave);
-		
-		bridge.pings_plugIn(installComponent!MissileTube.port.slave);
-		
-		bridge.wires_plugIn(headCon.controlPort.slave);
-		bridge.wires_plugIn(rotCon.controlPort.slave);
-		bridge.wires_plugIn(rotThrust.port.slave);
-		
-		bridge.spawners_plugIn(installComponent!Spawner.port.slave);
+		{
+			auto comp = installComponent!Radar;
+			connect(comp.port, bridge.radars);
+		}
+		{
+			auto comp = installComponent!DirectThruster(DirectThruster.Type.fore);
+			connect(comp.port, bridge.wires);
+		}
+		connect(rotCon.controlPort, bridge.wires);
+		{
+			auto comp = installComponent!DirectThruster(DirectThruster.Type.side);
+			connect(comp.port, bridge.wires);
+		}
+		{
+			auto comp = installComponent!MissileTube;
+			connect(comp.port, bridge.pings);
+		}
+		{
+			auto comp = installComponent!Spawner;
+			connect(comp.port, bridge.spawners);
+		}
+		connect(bridge.wires, headCon.controlPort);
+		connect(bridge.wires, rotCon.controlPort);
+		connect(bridge.wires, rotThrust.port);
 	}
 	
 	void update() {
 		foreach (c; allComponents) {
-			c._update;
+			c.update;
 		}
-		foreach (c; allComponents) {
-			c._portsInternalPostUpdate;
+		foreach (p; allPorts) {
+			if (p[1] !is null)
+				p[1]();
 		}
+	}
+	
+	auto connect(PortA, PortB)(ref PortA a, ref PortB b) {
+		static if (isDynamicArray!PortA) {
+			a.length++;
+			auto aImpl = &a[$-1];
+		}
+		else {
+			auto aImpl = &a;
+		}
+		static if (isDynamicArray!PortB) {
+			b.length++;
+			auto bImpl = &b[$-1];
+		}
+		else {
+			auto bImpl = &b;
+		}
+		return connectImpl(*aImpl, *bImpl);
+	}
+	Port* connectImpl(Port)(ref Port* a, ref Port* b) {
+		if (a is null) {
+			if (b is null) {
+				auto port = new Port();
+				static if (__traits(hasMember, Port, "initalize"))
+					port.initalize;
+				static if (__traits(hasMember, Port, "update"))
+					allPorts ~= Tuple!(void*, void delegate())(port, &port.update);
+				else
+					allPorts ~= Tuple!(void*, void delegate())(port, null);
+				port.connections ~= &a;
+				port.connections ~= &b;
+				a = port;
+				b = port;
+			}
+			else {
+				b.connections ~= &a;
+				a = b;
+			}
+		}
+		else {
+			if (b is null) {
+				a.connections ~= &b;
+				b = a;
+			}
+			else {
+				foreach (con; b.connections)
+					*con = a;
+				a.connections ~= b.connections;
+				b.connections.length = 0;
+			}
+		}
+		assert(a == b);
+		return a;
 	}
 	
 	template installComponent(Component) {

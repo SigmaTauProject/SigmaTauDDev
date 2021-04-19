@@ -12,13 +12,13 @@ class PingOutPort extends Port {
 	//---Private Members
 	
 	///---Messages
-	static rpc_ping	= [3, ];
+	static rpc_ping	= [3, SerialType.uint8];
 	
 	//-Getting & Listening
 	
 	//-Setting
 	ping(src=Src.self) {
-		this.ping_send();
+		this.ping_send(1);
 	}
 	
 }

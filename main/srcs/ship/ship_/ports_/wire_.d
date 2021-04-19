@@ -1,12 +1,11 @@
 module ship_.ports_.wire_;
 
 
-struct WireMaster {
+struct WirePort {
+	WirePort**[] connections;
+	
 	//---POD
 	float _value = 0;
-	float _nextValue = 0;
-	
-	NetWireConnection net;
 	
 	//---methods
 	@property float value() {
@@ -14,52 +13,6 @@ struct WireMaster {
 	}
 	void setValue(float n) {
 		// TODO: validate.
-		if (n != _value) {
-			_value = n;
-			_nextValue = n;
-			if (net) net.onSetValue;
-		}
+		_value = n;
 	}
-	
-	void update() {
-		setValue(_nextValue);
-	}
-	
-	@property
-	WireSlave* slave() {
-		return cast(WireSlave*) &this;
-	}
-}
-
-struct WireSlave {
-	//---POD
-	float _value;
-	float _nextValue;
-	
-	NetWireConnection net;
-	
-	//---methods
-	@property float value() {
-		return _value;
-	}
-	void setValue(float n) {
-		// TODO: validate.
-		_nextValue = n;
-	}
-}
-
-abstract class NetWireConnection {
-	WireSlave* port;
-	
-	this(WireSlave* port) {
-		this.port = port;
-		port.net = this;
-	}
-	
-	void setValue(float n) {
-		port._value = n;
-		port._nextValue = n;
-	}
-	
-	abstract void onSetValue();
 }
