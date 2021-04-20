@@ -70,7 +70,8 @@ class PlayerShip : Fiber {
 	}
 	void run() {
 		auto terminalServer = new TerminalServer(port);
-		auto ship = new Ship(world);
+		auto entity = new Entity(fineShipObject,pvec(48.fromFloat!long,0.fromFloat!long),vec(0,0), 16384*0);
+		auto ship = new Ship(world, entity);
 		auto netBridge = new NetBridge(ship.bridge);
 		
 		while (true) {

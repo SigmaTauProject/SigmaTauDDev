@@ -38,6 +38,8 @@ class DirectThruster : ThrusterBase {
 	}
 	
 	override void update() {
+		if (port is null)
+			return;
 		final switch (type) {
 			case Type.fore:
 				ship.entity.applyImpulseCentered(vec(port.value, 0));

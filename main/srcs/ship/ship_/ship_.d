@@ -36,9 +36,9 @@ class Ship : ship_.component_.Ship {
 	//World world;
 	//Entity entity;
 	
-	this (World world) {
+	this (World world, Entity entity) {
 		this.world = world;
-		entity = new Entity(fineShipObject,pvec(48.fromFloat!long,0.fromFloat!long),vec(0,0), 16384*0);
+		this.entity = entity;
 		world.addEntity(entity);
 		bridge = new Bridge(this);
 		

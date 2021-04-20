@@ -13,6 +13,7 @@ import math.linear.vector;
 import math.linear.point;
 
 import player_ship_;
+import ai_ship_;
 
 import core.time;
 import std.datetime;
@@ -28,7 +29,7 @@ void main() {
 	}
 	world.addEntity(new Entity(stationObject, pvec(0L,128.fromFloat!long),vec((0.5).fromFloat!int,0), 16384*0));
 	
-	auto ships = [new PlayerShip(8080, world), new PlayerShip(8081, world)];
+	auto ships = [new PlayerShip(8080, world), new AIShip(world)];
 	
 	while (true) {
 		auto loopStartTime = MonoTime.currTime;
