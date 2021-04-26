@@ -14,6 +14,7 @@ alias WorldPos = PVec2!long;
 alias WorldVel = Vec2!int;
 alias Ori = ushort;
 alias Anv = int;
+alias Ana = Anv;
 
 alias Radians = float;
 
@@ -26,6 +27,7 @@ class Entity {
 	WorldVel	vel	;
 	Ori	ori	;
 	Anv	anv	;
+	Ana	ana	;
 	
 	EntityObject object;
 	

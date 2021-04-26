@@ -80,5 +80,9 @@ void applyImpulse(Entity entity, Imp impulse, RelPos pos) {
 	entity.applyImpulseAngular(cross(pos.vector, impulse));
 }
 
+void applyForceAngular(Entity entity, float f) {
+	entity.ana += (f / entity.object.inertia).anvFromRadians;
+}
+
 
 

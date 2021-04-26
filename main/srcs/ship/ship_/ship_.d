@@ -42,11 +42,11 @@ class Ship : ship_.component_.Ship {
 		world.addEntity(entity);
 		bridge = new Bridge(this);
 		
-		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
 		auto rotCon = installComponent!RotateController;
-		connect(rotCon.thrusterPort, rotThrust.port);
+		////connect(rotCon.thrusterPort, rotThrust.port);
 		auto headCon = installComponent!HeadingController;
-		connect(headCon.rotationControllerPort, rotCon.controlPort);
+		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
+		connect(headCon.thrusterPort, rotThrust.port);
 		
 		{
 			auto comp = installComponent!Radar;

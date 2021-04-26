@@ -133,7 +133,9 @@ class PhysicsWorld {
 		void finishEntity(size_t e) {
 			entities[e].pos += entities[e].vel * cast(long) ((1 - entities[e].playAhead) * 65536) / 65536;
 			entities[e].playAhead = 1;
-			entities[e].ori += entities[e].anv;
+			entities[e].ori += entities[e].anv + entities[e].ana/2;
+			entities[e].anv += entities[e].ana;
+			entities[e].ana = 0;
 			foreach (w; gravityWells) {
 				entities[e].applyWorldImpulseCentered(
 					( 0.000000000001f
