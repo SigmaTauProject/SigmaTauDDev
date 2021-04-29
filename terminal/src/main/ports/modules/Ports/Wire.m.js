@@ -89,7 +89,7 @@ class WirePort extends Port {
 	}
 	
 	// Pacing
-	last = null;
+	lastSend = null;
 	
 	set(n) {
 		if (this.data !== null)
@@ -100,28 +100,28 @@ class WirePort extends Port {
 		{// Pacing
 			// TODO: if an old value is received from the server while holding, the held value will get overridden and never sent.
 			let now = Date.now();
-			if (this.last == "callback") {
+			if (this.lastSend == "callback") {
 				return;
 			}
-			if (this.last !== null && this.last > now-50) {
+			if (this.lastSend !== null && this.lastSend > now-50) {
 				setTimeout(()=>{
-					this.last = Date.now();
+					this.lastSend = Date.now();
 					if (this.data !== null) {
 						this.set_send(this.data.payload);
 						this.lastSetMsgID = this.server.sentMsgID;
 					}
-				}, 60-(now-this.last));
-				this.last = "callback";
+				}, 60-(now-this.lastSend));
+				this.lastSend = "callback";
 				return;
 			}
-			this.last = now;
+			this.lastSend = now;
 			
 			this.set_send(n);
 			this.lastSetMsgID = this.server.sentMsgID;
 		}
 	}
 	remote_set(n, last) {
-		if (this.lastSetMsgID > last) {
+		if (this.lastSetMsgID > last || this.lastSend=="callback") {
 			return;
 		}
 		if (this.data !== null) {
