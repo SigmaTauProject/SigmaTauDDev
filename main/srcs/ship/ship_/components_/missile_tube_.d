@@ -19,13 +19,19 @@ class MissileTube : Component {
 	@Port
 	PingPort* port;
 	
+	int loading = 16;
+	
 	this(Ship ship) {
 		super(ship);
 	}
 	
 	override void update() {
-		foreach (_; 0..port.pings)
+		if (loading)
+			loading --;
+		else if (port.pings) {
 			ship.world.addEntity(new Entity(bulletObject, ship.entity.pos, vec(2f,0).velRel(ship.entity), ship.entity.ori));
+			loading = 16;
+		}
 	}
 	
 	mixin ComponentMixin!();

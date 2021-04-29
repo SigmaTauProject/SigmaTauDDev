@@ -81,20 +81,20 @@ class HeadingController : Component {
 		}
 		else {
 			float a = -(ship.entity.anv*ship.entity.anv) / (d*2f);
-			if (abs(a) < ma8)
-				write("\033[33m");
-			if (sgn(ship.entity.anv) != sgn(d))
-				write("\033[32m");
-			if (abs(a) > ma)
-				write("\033[31m");
-			writeln(ma," ",ma8,"\t ",a,"  \t ",ship.entity.anv,"\t ",d);
-			write("\033[0m");
-			auto ma8d = -ma8*sgn(d);
-			if (sgn(ship.entity.anv+a) != sgn(ship.entity.anv))
-				writeln("------------------------------");
+			////if (abs(a) < ma8)
+			////	write("\033[33m");
+			////if (sgn(ship.entity.anv) != sgn(d))
+			////	write("\033[32m");
+			////if (abs(a) > ma)
+			////	write("\033[31m");
+			////writeln(ma," ",ma8,"\t ",a,"  \t ",ship.entity.anv,"\t ",d);
+			////write("\033[0m");
+			////if (sgn(ship.entity.anv+a) != sgn(ship.entity.anv))
+			////	writeln("------------------------------");
 			if (sgn(ship.entity.anv+a) != sgn(ship.entity.anv))
 				thrusterPort.setValue(magClamp((d-ship.entity.anv*1.5f)/ma, 1));
 			else if (abs(a) < ma8 || sgn(ship.entity.anv) != sgn(d)) {
+				auto ma8d = -ma8*sgn(d);
 				float aa = (copysignsqrt(-ma8*(-8f*d + ma8d + 4f*ship.entity.anv)) + ma8d - 2f*ship.entity.anv)/2;
 				////if (abs(ship.entity.anv) == 1)
 				////	aa = -ship.entity.anv;
@@ -104,7 +104,7 @@ class HeadingController : Component {
 				////	aa = paa;
 				////if (aa < 0 && paa < aa)
 				////	aa = paa;
-				writeln((copysignsqrt(-ma8*(-8f*d + ma8d + 4f*ship.entity.anv)) + ma8d - 2f*ship.entity.anv)/2, "\t\t", d-ship.entity.anv*1.5f, "\t\t", aa);
+				////writeln((copysignsqrt(-ma8*(-8f*d + ma8d + 4f*ship.entity.anv)) + ma8d - 2f*ship.entity.anv)/2, "\t\t", d-ship.entity.anv*1.5f, "\t\t", aa);
 				////thrusterPort.setValue(magClamp((
 				////	(copysignsqrt(-ma8*(-8f*d + ma8d + 4f*ship.entity.anv)) + ma8d - 2f*ship.entity.anv)/2
 				////)/ma, 1));

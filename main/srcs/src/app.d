@@ -31,7 +31,7 @@ void main() {
 	
 	auto ships = [
 		new PlayerShip(8080, world)	,
-		////new AIShip(world)	,
+		new AIShip(world)	,
 	];
 	
 	while (true) {

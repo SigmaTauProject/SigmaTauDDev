@@ -41,6 +41,11 @@ class AIShip : Fiber {
 			
 			ship.bridge.wires[3].setValue(atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x)/PI);
 			
+			import std.stdio;
+			if (100 > abs(entity.ori - atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x).oriFromRadians)) {
+				ship.bridge.pings[0].ping;
+			}
+			
 			ship.update;
 		}
 	}
