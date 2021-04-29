@@ -65,6 +65,9 @@ Ori oriFromRadians(Radians a) {
 Anv anvFromRadians(Radians a) {
 	return cast(Anv) ((a * 65536) / TAU);
 }
+float anvFromRadiansf(Radians a) {
+	return ((a * 65536) / TAU);
+}
 
 float toFloat(T)(T val) if (isIntegral!T) {
 	return cast(float) val / 65536;
