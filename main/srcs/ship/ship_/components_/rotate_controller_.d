@@ -29,6 +29,7 @@ class RotateController : Component {
 	override void update() {
 		if (controlPort is null || thrusterPort is null)
 			return;
+		thrusterPort._twitched |= controlPort.twitched;
 		thrusterPort.setValue(clamp((pow(abs(controlPort.value)*16,2)*128*sgn(controlPort.value) - ship.entity.anv)/256f, -1, 1));
 	}
 	

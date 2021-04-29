@@ -6,6 +6,7 @@ struct WirePort {
 	
 	//---POD
 	float _value = 0;
+	bool _twitched = false;
 	
 	//---methods
 	@property float value() {
@@ -14,5 +15,16 @@ struct WirePort {
 	void setValue(float n) {
 		// TODO: validate.
 		_value = n;
+	}
+	@property bool twitched() {
+		return _twitched;
+	}
+	void twitch() {
+		_twitched = true;
+	}
+	
+	//---special
+	void update() {
+		_twitched = false;
 	}
 }

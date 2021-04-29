@@ -32,6 +32,8 @@ class HeadingController : Component {
 		if (controlPort is null || thrusterPort is null)
 			return;
 		
+		thrusterPort._twitched |= controlPort.twitched;
+		
 		////const calcForward = 2;
 		////
 		////auto forwardOri = cast(short) (ship.entity.ori + ship.entity.anv*calcForward);

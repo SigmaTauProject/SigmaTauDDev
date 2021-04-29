@@ -23,6 +23,8 @@ import ship_.components_.radar_;
 import ship_.components_.missile_tube_;
 import ship_.components_.spawner_;
 
+import ship_.components_.twitch_switch_;
+
 import ship_.components_.rotate_controller_;
 import ship_.components_.heading_controller_;
 //---
@@ -45,8 +47,11 @@ class Ship : ship_.component_.Ship {
 		auto rotCon = installComponent!RotateController;
 		////connect(rotCon.thrusterPort, rotThrust.port);
 		auto headCon = installComponent!HeadingController;
+		auto thrusterSwitch = installComponent!TwitchSwitch(true);
 		auto rotThrust = installComponent!DirectThruster(DirectThruster.Type.rot);
-		connect(headCon.thrusterPort, rotThrust.port);
+		connect(thrusterSwitch.outPort, rotThrust.port);
+		connect(headCon.thrusterPort, thrusterSwitch.inPorts);
+		connect(rotCon.thrusterPort, thrusterSwitch.inPorts);
 		
 		{
 			auto comp = installComponent!Radar;
@@ -71,7 +76,7 @@ class Ship : ship_.component_.Ship {
 		}
 		connect(bridge.wires, headCon.controlPort);
 		connect(bridge.wires, rotCon.controlPort);
-		connect(bridge.wires, rotThrust.port);
+		connect(bridge.wires, thrusterSwitch.inPorts);
 	}
 	
 	void update() {

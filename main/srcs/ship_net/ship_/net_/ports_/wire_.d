@@ -104,6 +104,7 @@ class NetWire : NetPort {
 	@RPC!SrcClient(3)
 	void set(float n) {
 		port.setValue(n);
+		port.twitch;
 		if (n != lastValue) {
 			lastValue = n;
 			set_send!TrgtClients(listeners, n, listeners.map!(l=>l.msgID).array);
