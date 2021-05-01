@@ -20,13 +20,44 @@ const Src = {
 };
 
 export
-class Port {
+class NullPort {
+	uis = [];
+	constructor(...uis) {
+		if (uis.length) {
+			console.assert(this.constructor == NullPort);
+			this.attachUI(...uis);
+		}
+	}
+	attachUI(...uis) {
+		this.uis.push(...uis);
+		if (this.constructor!=NullPort)
+			for (let ui of uis)
+				ui(this);
+	}
+	unattachUI(...uis) {
+		for (let ui of uis) {
+			let i = this.uis.indexOf(ui);
+			console.assert(i != -1);
+			this.uis.splice(i,1);
+			if (this.constructor != NullPort)
+				ui(null, this);
+		}
+	}
+}
+
+export
+class Port extends NullPort {
 	type;
 	id;
+	typeID;
 	server;
 	
-	constructor(type) {
+	constructor(type, typeID) {
+		super();
 		this.type = type;
+		this.typeID = typeID;
+	}
+	destory() {
 	}
 	safeCast(toType) {
 		if (toType==this.type)

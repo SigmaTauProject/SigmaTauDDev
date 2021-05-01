@@ -19,8 +19,8 @@ class NetWireBranch : NetPort {
 	Client[] getWaiters;
 	Client[] listeners;
 	
-	this(ubyte id) {
-		super(portType!(typeof(this)), id);
+	this(ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 	}
 	
 	override
@@ -88,8 +88,8 @@ class NetWire : NetPort {
 	float lastValue;
 	Client[] listeners;
 	
-	this (WirePort* port, ubyte id) {
-		super(portType!(typeof(this)), id);
+	this (WirePort* port, ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 		this.port = port;
 	}
 	
@@ -105,10 +105,10 @@ class NetWire : NetPort {
 	void set(float n) {
 		port.setValue(n);
 		port.twitch;
-		if (n != lastValue) {
-			lastValue = n;
-			set_send!TrgtClients(listeners, n, listeners.map!(l=>l.msgID).array);
-		}
+		////if (n != lastValue) {
+		////	lastValue = n;
+		////	set_send!TrgtClients(listeners, n, listeners.map!(l=>l.msgID).array);
+		////}
 	}
 	
 	@RPC!SrcClient(0)

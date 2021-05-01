@@ -17,6 +17,7 @@ const SerialType = {
 	staticArray	: (elementType, length)=>({type:"array", length, elementType})	,
 	struct	: Cls=>({type:"struct", Cls})	,
 	object	: Cls=>({type:"struct", Cls})	,
+	tuple	: (...types)=>({type:"tuple", types})	,
 };
 
 const basicTypes = [
@@ -109,6 +110,16 @@ class Serializer {
 			}
 			return valuesSize;
 		}
+		if ((typeof(type) == "object" && type.type == "tuple")) {
+			let valuesSize = 0;
+			for (let t of type.types) {
+				let vs = this.sizeOf(t);
+				if (vs == undefined)
+					return undefined;
+				valuesSize += vs;
+			}
+			return valuesSize;
+		}
 		return undefined;
 	}
 	byteSizeOf(type, value) {
@@ -151,6 +162,16 @@ class Serializer {
 			let valuesSize = 0;
 			for (let k of Object.keys(type.Cls).filter(k=>k.startsWith("serial_"))) {
 				let vs = this.byteSizeOf(type.Cls[k], value[k.slice("serial_".length)]);
+				if (vs == undefined)
+					return undefined;
+				valuesSize += vs;
+			}
+			return valuesSize;
+		}
+		if (typeof(type) == "object" && type.type == "tuple") {
+			let valuesSize = 0;
+			for (const [i,t] of type.types.entries()) {
+				let vs = this.byteSizeOf(t, value[i]);
 				if (vs == undefined)
 					return undefined;
 				valuesSize += vs;
@@ -232,6 +253,29 @@ class Serializer {
 			}
 			return buffer;
 		}
+		if (typeof(type) == "object" && type.type == "tuple") {
+			let keys = Object.keys(type.Cls).filter(k=>k.startsWith("serial_")).map(k=>k.slice("serial_".length));
+			
+			let byteLength = this.byteSizeOf(type, value);
+			if (byteLength) {
+				defineBuffer(byteLength);
+				let workingBuffer = buffer;
+				for (const [i,t] of type.types.entries())
+					workingBuffer = this._serializeTo(t, value[i], workingBuffer);
+			}
+			else {
+				let builder = [];
+				for (const [i,t] of type.types.entries())
+					builder.push(this._serializeTo(t, value[i]));
+				byteLength = builder.sum(b=>b.byteLength);
+				defineBuffer(byteLength);
+				let workingBuffer = buffer;
+				for (let b of builder) {
+					this._copyTo(b, workingBuffer);
+				}
+			}
+			return buffer;
+		}
 		console.assert(false, "Serialize Type not defined.");
 	}
 	
@@ -278,6 +322,13 @@ class Serializer {
 			let keys = Object.keys(type.Cls).filter(k=>k.startsWith("serial_")).map(k=>k.slice("serial_".length));
 			for (let k of keys)
 				value[k] = this.deserialize(type.Cls["serial_"+k], buffer, wb=>buffer=wb)
+			workingBuffer_callback(buffer);
+			return value;
+		}
+		if (typeof(type) == "object" && type.type == "tuple") {
+			let value = new Array(type.types.length);
+			for (const [i,t] of type.types.entries())
+				value[i] = this.deserialize(t, buffer, wb=>buffer=wb)
 			workingBuffer_callback(buffer);
 			return value;
 		}

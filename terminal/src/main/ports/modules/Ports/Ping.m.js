@@ -5,8 +5,8 @@ import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js
 export
 class PingOutPort extends Port {
 	//---Constructors
-	constructor() {
-		super(PortType.pingOut);
+	constructor (typeID) {
+		super(PortType.pingOut, typeID);
 	}
 	
 	//---Private Members

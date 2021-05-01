@@ -3,8 +3,8 @@ import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
 export
 class UnknownPort extends Port {
 	networkedType;
-	constructor(type) {
-		super(PortType.unknown);
+	constructor(type, typeID) {
+		super(PortType.unknown, typeID);
 		networkedType = type;
 	}
 }

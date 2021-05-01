@@ -25,8 +25,8 @@ class RadarEntity {
 export
 class RadarPort extends Port {
 	//---Constructors
-	constructor() {
-		super(PortType.radar);
+	constructor (typeID) {
+		super(PortType.radar, typeID);
 	}
 	
 	//---Private Members

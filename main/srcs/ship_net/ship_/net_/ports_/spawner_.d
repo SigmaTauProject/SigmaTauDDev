@@ -17,8 +17,8 @@ class NetSpawnerBranch : NetPort {
 	Client[] getWaiters;
 	Client[] listeners;
 	
-	this(ubyte id) {
-		super(portType!(typeof(this)), id);
+	this(ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 	}
 	
 	@RPC!SrcClient(0)
@@ -63,8 +63,8 @@ class NetSpawner : NetPort {
 	Client[] getWaiters;
 	Client[] listeners;
 	
-	this (SpawnerPort* port, ubyte id) {
-		super(portType!(typeof(this)), id);
+	this (SpawnerPort* port, ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 		this.port = port;
 	}
 	

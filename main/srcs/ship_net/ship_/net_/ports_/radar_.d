@@ -19,8 +19,8 @@ class NetRadarBranch : NetPort {
 	Client[] getWaiters;
 	Client[] listeners;
 	
-	this(ubyte id) {
-		super(portType!(typeof(this)), id);
+	this(ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 	}
 	
 	override
@@ -86,8 +86,8 @@ class NetRadar : NetPort {
 	Client[] getters;
 	Client[] listeners;
 	
-	this (RadarPort* port, ubyte id) {
-		super(portType!(typeof(this)), id);
+	this (RadarPort* port, ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 		this.port = port;
 	}
 	

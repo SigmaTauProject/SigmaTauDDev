@@ -1,4 +1,4 @@
-import {Port, PortType, Src, portMixin_withRPC} from "./Port.m.js";
+import {Port, PortType, NullPort, Src, portMixin_withRPC} from "./Port.m.js";
 import {WirePort} from "/modules/Ports/Wire.m.js";
 import {PingOutPort} from "/modules/Ports/Ping.m.js";
 import {RadarPort} from "/modules/Ports/Radar.m.js";
@@ -8,12 +8,12 @@ import {UnknownPort} from "/modules/Ports/Unknown.m.js";
 import {Serializer, SerialType, NoLength, LengthType} from "/modules/Serial.m.js";
 import Ptr from "/modules/Ptr.m.js";
 
-import {Slider} from "/modules/UI/Slider.m.js";
-import {Button} from "/modules/UI/Button.m.js";
-import {Radar} from "/modules/UI/Radar.m.js";
-import {RadarView} from "/modules/UI/RadarView.m.js";
-import {RadarSpawner} from "/modules/UI/RadarSpawner.m.js";
-import {WireKeys, PingKey} from "/modules/UI/Keys.m.js";
+////import {Slider} from "/modules/UI/Slider.m.js";
+////import {Button} from "/modules/UI/Button.m.js";
+////import {Radar} from "/modules/UI/Radar.m.js";
+////import {RadarView} from "/modules/UI/RadarView.m.js";
+////import {RadarSpawner} from "/modules/UI/RadarSpawner.m.js";
+////import {WireKeys, PingKey} from "/modules/UI/Keys.m.js";
 
 
 ////var wirePortKeys = [
@@ -35,13 +35,15 @@ class Bridge extends Port {
 	
 	//---Constructors
 	constructor(server) {
-		super(PortType.bridge);
-		this.ports = [this];
+		super(PortType.bridge, 0);
+		this.allPorts = [this];
+		this.ports = {};
 		this.server = server;
 	}
 	
 	//---Private Members
 	server	;
+	allPorts	;
 	ports	;
 	
 	//---Bridge Code
@@ -49,71 +51,90 @@ class Bridge extends Port {
 		// TODO: Possible crash
 		let portID = msgData[0];
 		msgData = msgData.slice(1);
-		this.ports[portID].rpcRecv(msgData, Src.server);
+		this.allPorts[portID].rpcRecv(msgData, Src.server);
 	}
 	
 	//---Messages
-	static rpc_updatePorts	= [0, SerialType.array(SerialType.uint8), SerialType.array(SerialType.uint8)];
+	static rpc_updatePorts	= [0, SerialType.array(SerialType.uint8), SerialType.array(SerialType.tuple(SerialType.uint8,SerialType.uint8))];
 	
-	updatePorts(removed, added) {
-		removed.forEach(r=>this.ports[r] = 0);
-		added.forEach(t=>this.addPort(t));
+	attachUI(type, typeID, callback) {
+		this.ports[type] ||= [];
+		(this.ports[type][typeID] ||= new NullPort()).attachUI(callback);
+	}
+	unattachUI(type, typeID, callback) {
+		this.ports[type][typeID].unattachUI(callback);
 	}
 	
-	addPort(type) {
+	updatePorts(removed, added) {
+		removed.forEach(r=> {
+			this.ports[this.ports[r].typeID];
+			this.ports[r].destroy();
+			this.ports[r] = new NullPort(...this.ports[r].uis);
+		});
+		added.forEach(a=>this.addPort(...a));
+	}
+	
+	addPort(type, typeID) {
 		let port;
 		switch(type) {
 			case PortType.bridge:
 				console.assert(false);
 			case PortType.wire:
-				port = new WirePort(); 
+				port = new WirePort(typeID); 
 				break;
 			case PortType.pingOut:
-				port = new PingOutPort(); 
+				port = new PingOutPort(typeID); 
 				break;
 			case PortType.radar:
-				port = new RadarPort(); 
+				port = new RadarPort(typeID); 
 				break;
 			case PortType.spawner:
-				port = new SpawnerPort(); 
+				port = new SpawnerPort(typeID); 
 				break;
 			default:
-				port = new UnknownPort(type);
+				port = new UnknownPort(type, typeID);
 				break;
 		}
 		this.addNewPortToPorts(port);
 	}
 	
 	addNewPortToPorts(port) {
-		console.assert(this.ports.length <= 255);
+		console.assert(this.allPorts.length <= 255);
+		//---init
 		port.server = this.server;
-		port.id = this.ports.indexOf(null);
+		//---allPorts
+		port.id = this.allPorts.indexOf(null);
 		if (port.id == -1) {
-			port.id = this.ports.length;
-			this.ports.push(port);
+			port.id = this.allPorts.length;
+			this.allPorts.push(port);
 		}
 		else {
-			this.ports[port.id] = port;
+			this.allPorts[port.id] = port;
 		}
-		if (port.type == PortType.wire) {
-			document.body.appendChild(new Slider(port).el);
-			if (wirePortKeys.length)
-				wirePortKeys.splice(0,1)[0](port);
-		}
-		else if (port.type == PortType.radar) {
-			window.radar = new Radar();
-			radar.el.style.maxHeight = "100vh";
-			new RadarView(radar, port);
-			document.body.appendChild(radar.el);
-		}
-		else if (port.type == PortType.spawner) {
-			new RadarSpawner(window.radar, port);
-		}
-		else if (port.type == PortType.pingOut) {
-			document.body.appendChild(new Button(port).el);
-			if (pingPortKeys.length)
-				pingPortKeys.splice(0,1)[0](port);
-		}
+		//---ports
+		this.ports[port.type] ||= [];
+		port.attachUI(...this.ports[port.type][port.typeID]?.uis || []);
+		this.ports[port.type][port.typeID] = port;
+		
+		////if (port.type == PortType.wire) {
+		////	document.body.appendChild(new Slider(port).el);
+		////	if (wirePortKeys.length)
+		////		wirePortKeys.splice(0,1)[0](port);
+		////}
+		////else if (port.type == PortType.radar) {
+		////	window.radar = new Radar();
+		////	radar.el.style.maxHeight = "100vh";
+		////	new RadarView(radar, port);
+		////	document.body.appendChild(radar.el);
+		////}
+		////else if (port.type == PortType.spawner) {
+		////	new RadarSpawner(window.radar, port);
+		////}
+		////else if (port.type == PortType.pingOut) {
+		////	document.body.appendChild(new Button(port).el);
+		////	if (pingPortKeys.length)
+		////		pingPortKeys.splice(0,1)[0](port);
+		////}
 	}
 }
 

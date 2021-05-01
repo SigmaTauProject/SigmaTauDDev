@@ -10,6 +10,7 @@ sourcePaths	"srcs/src"
 importPaths	"srcs/src"
 stringImportPaths	"stringImports"
 preBuildCommands	"rm -r ../dist || true"
+buildRequirements	"allowWarnings"
 
 subPackage {
 	name	"ship"

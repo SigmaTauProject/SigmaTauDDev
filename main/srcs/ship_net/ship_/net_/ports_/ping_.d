@@ -17,8 +17,8 @@ class NetPingBranch : NetPort {
 	Client[] getWaiters;
 	Client[] listeners;
 	
-	this(ubyte id) {
-		super(portType!(typeof(this)), id);
+	this(ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 	}
 	
 	@RPC!SrcClient(0)
@@ -63,8 +63,8 @@ class NetPing : NetPort {
 	Client[] getWaiters;
 	Client[] listeners;
 	
-	this (PingPort* port, ubyte id) {
-		super(portType!(typeof(this)), id);
+	this (PingPort* port, ubyte id, ubyte typeID) {
+		super(portType!(typeof(this)), id, typeID);
 		this.port = port;
 	}
 	

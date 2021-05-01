@@ -12,8 +12,8 @@ class WirePortRoot {
 
 export
 class WirePort extends Port {
-	constructor () {
-		super(PortType.wire);
+	constructor (typeID) {
+		super(PortType.wire, typeID);
 	}
 	
 	data	= null	;
@@ -103,7 +103,7 @@ class WirePort extends Port {
 			if (this.lastSend == "callback") {
 				return;
 			}
-			if (this.lastSend !== null && this.lastSend > now-50) {
+			if (this.lastSend !== null && this.lastSend > now-100) {
 				setTimeout(()=>{
 					this.lastSend = Date.now();
 					if (this.data !== null) {

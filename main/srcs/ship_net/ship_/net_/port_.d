@@ -44,10 +44,12 @@ abstract
 class NetPort {
 	const PortType type;
 	const ubyte id;
+	const ubyte typeID;
 	
-	this(PortType type, ubyte id) {
+	this(PortType type, ubyte id, ubyte typeID) {
 		this.type = type;
 		this.id = id;
+		this.typeID = typeID;
 	}
 	
 	void update() {}

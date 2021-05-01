@@ -6,8 +6,8 @@ export
 function MsgOutPortBase(T, portType) {
 	class MsgOutPortBase extends Port {
 		//---Constructors
-		constructor() {
-			super(portType);
+		constructor (typeID) {
+			super(portType, typeID);
 		}
 		
 		//---Private Members

@@ -7,6 +7,7 @@ import std.range;
 import std.bitmanip;
 import std.string;
 import std.conv;
+import std.typecons;
 import treeserial;
 import structuredrpc;
 
@@ -22,17 +23,17 @@ class NetBridgeBranch : NetPort {
 	Client[] clients = [];
 	
 	this() {
-		super(portType!(typeof(this)), 0);
+		super(portType!(typeof(this)), 0, 0);
 		this.ports = [this];
 	}
 	
 	void newClients(Client[] newClients) {
 		clients ~= newClients;
-		updatePorts_send!TrgtClients(newClients, [], ports[1..$].map!(p=>p.type).array);
+		updatePorts_send!TrgtClients(newClients, [], ports[1..$].map!(p=>tuple(p.type,p.typeID)).array);
 	}
 	
 	@RPC!SrcServer(0)
-	void __updatePorts(ubyte[] removedPorts, PortType[] addedPorts) {
+	void __updatePorts(ubyte[] removedPorts, Tuple!(const PortType, const ubyte)[] addedPorts) {
 		assert(false, "Unimplemented");
 		////NetPort addPort(PortType type) {
 		////	NetPort addPort(alias type)() {
@@ -60,40 +61,66 @@ class NetBridgeBranch : NetPort {
 
 class NetBridge : NetPort {
 	Bridge bridge;
-	HoldArray!NetPort ports;
 	Client[] clients = [];
+	HoldArray!NetPort ports;
+	static foreach (portName; portNames) {
+		mixin("Net"~portName.capitalize~"[] "~portName~"s;");
+	}
 	
 	this (Bridge bridge) {
-		super(portType!(typeof(this)), 0);
+		super(portType!(typeof(this)), 0, 0);
 		this.bridge = bridge;
 		this.ports = HoldArray!NetPort([this]);
 	}
 	
 	void updateSend() {
+		// TODO: Never remove to reorder.
 		ubyte[] removedPorts;
-		PortType[] addedPorts;
+		Tuple!(const PortType, const ubyte)[] addedPorts;
 		{
 			size_t currentID = 1;// Skip bridge which is 0.
 			static foreach (portName; portNames) {
-				foreach (port; mixin("bridge."~portName~"s")) {
-					auto f = ports[currentID..$].countUntil!(p=>p.portPointer == port);
-					if (f == -1) {
-						//---Add Port
-						ubyte id = ports.add(null).to!ubyte;
-						auto p = mixin("new Net"~portName.capitalize~"(port, id)");
-						ports[id] = p;
-						addedPorts ~= p.type;
-					}
-					else {
-						//---Remove Ports (if needed)
-						foreach (i; currentID..currentID+f) {
-							removedPorts ~= cast(ubyte) i;
-							ports.remove(i);
+				(ref typeof(mixin("bridge."~portName~"s")) ports, ref mixin("Net"~portName.capitalize)[] netPorts) {
+					netPorts.length = max(ports.length, netPorts.length);
+					foreach (i, ref netPort; netPorts) {
+						if (netPort !is null && (i >= ports.length || ports[i] != netPort.portPointer)) {
+							//---Remove Port
+							removedPorts ~= i.to!ubyte;
+							netPort = null;
+							this.ports.remove(netPort.id);
 						}
-						currentID += f;
+						if (i < ports.length && ports[i] !is null && (netPort is null || ports[i] != netPort.portPointer)) {
+							//---Add Port
+							ubyte id = this.ports.add(null).to!ubyte;
+							netPort = new typeof(netPort)(ports[i], id, i.to!ubyte);
+							this.ports[id] = netPort;
+							addedPorts ~= tuple(netPort.type, cast(const) i.to!ubyte);
+						}
 					}
-					currentID ++;
-				}
+					netPorts.length = min(ports.length, netPorts.length);
+				}(mixin("bridge."~portName~"s"), mixin(portName~"s"));
+				////foreach (i, port; mixin("bridge."~portName~"s")) {
+				////	if (mixin("last"~port.capitalize~"s;")[i] != port) {
+				////		removed 
+				////	}
+				////	auto f = ports[currentID..$].countUntil!(p=>p.portPointer == port);
+				////	if (f == -1) {
+				////		//---Add Port
+				////		ubyte id = ports.add(null).to!ubyte;
+				////		auto p = mixin("new Net"~portName.capitalize~"(port, id)");
+				////		ports[id] = p;
+				////		addedPorts ~= p.type;
+				////	}
+				////	else {
+				////		//---Remove Ports (if needed)
+				////		////foreach (i; currentID..currentID+f) {
+				////		////	removedPorts ~= cast(ubyte) i;
+				////		////	ports.remove(i);
+				////		////}
+				////		currentID += f;
+				////	}
+				////	currentID ++;
+				////}
 			}
 		}
 		if (removedPorts.length || addedPorts.length)
@@ -121,7 +148,7 @@ class NetBridge : NetPort {
 	
 	void newClients(Client[] newClients) {
 		clients ~= newClients;
-		updatePorts_send!TrgtClients(newClients, [], ports[1..$].map!(p=>p.type).array);
+		updatePorts_send!TrgtClients(newClients, [], ports[1..$].map!(p=>tuple(p.type,p.typeID)).array);
 	}
 	
 	////size_t plugInPort(NetPort n) {
