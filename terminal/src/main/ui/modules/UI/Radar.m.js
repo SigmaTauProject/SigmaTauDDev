@@ -1,15 +1,19 @@
 import {div, svg, Div} from "/modules/Div.m.js";
+import {Port, PortType} from "/modules/Ports/Port.m.js";
+import {UIWithPort} from "../UI.m.js";
 
 import startZoom from "/modules/Zoom.m.js";
 
 export
-class Radar {
+class Radar extends HTMLElement {
 	el;
 	view;
 	background;
+	
 	scale = 0.01;
 	
-	constructor({}={}) {
+	constructor() {
+		super();
 		this.el = svg (
 			"svg", "radar",
 			"radar-circle",
@@ -42,10 +46,8 @@ class Radar {
 				Div.attributes({cx:"0",cy:"0",r:"1",fill:"none",stroke:"black","stroke-width":"0.01",}),
 			),
 		);
+		this.appendChild(this.el);
 	}
-	
-	update() {}
-	
-	destory() {}
 }
 
+customElements.define('ui-radar', Radar);

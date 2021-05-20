@@ -42,22 +42,22 @@ Object.defineProperty(Array.prototype, 'sum', {
 	}
 });
 Object.defineProperty(Array.prototype, 'head', {
-	value: function () {
+	get: function () {
 		return this[0];
 	}
 });
 Object.defineProperty(Array.prototype, 'tail', {
-	value: function () {
+	get: function () {
 		return this.slice(1,this.length);
 	}
 });
 Object.defineProperty(Array.prototype, 'last', {
-	value: function () {
+	get: function () {
 		return this[this.length-1];
 	}
 });
 Object.defineProperty(Array.prototype, 'init', {
-	value: function () {
+	get: function () {
 		return this.slice(0,this.length-1);
 	}
 });

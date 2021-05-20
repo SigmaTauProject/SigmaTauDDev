@@ -13,7 +13,7 @@ import Ptr from "/modules/Ptr.m.js";
 ////import {Radar} from "/modules/UI/Radar.m.js";
 ////import {RadarView} from "/modules/UI/RadarView.m.js";
 ////import {RadarSpawner} from "/modules/UI/RadarSpawner.m.js";
-////import {WireKeys, PingKey} from "/modules/UI/Keys.m.js";
+import {WireKeys, PingKey} from "/modules/UI/Keys.m.js";
 
 
 ////var wirePortKeys = [
@@ -49,8 +49,12 @@ class Bridge extends Port {
 	//---Bridge Code
 	dispatchMsg(msgData) {
 		// TODO: Possible crash
+		if (msgData.length == 0)
+			return console.error("Network Msg Error: Msg recieved with length 0 (no port ID sent).");
 		let portID = msgData[0];
 		msgData = msgData.slice(1);
+		if (!this.allPorts[portID])
+			return console.error("Network Msg Error: Port with portID does not exist.");
 		this.allPorts[portID].rpcRecv(msgData, Src.server);
 	}
 	
@@ -116,11 +120,11 @@ class Bridge extends Port {
 		port.attachUI(...this.ports[port.type][port.typeID]?.uis || []);
 		this.ports[port.type][port.typeID] = port;
 		
-		////if (port.type == PortType.wire) {
+		if (port.type == PortType.wire) {
 		////	document.body.appendChild(new Slider(port).el);
-		////	if (wirePortKeys.length)
-		////		wirePortKeys.splice(0,1)[0](port);
-		////}
+			if (wirePortKeys.length)
+				wirePortKeys.splice(0,1)[0](port);
+		}
 		////else if (port.type == PortType.radar) {
 		////	window.radar = new Radar();
 		////	radar.el.style.maxHeight = "100vh";

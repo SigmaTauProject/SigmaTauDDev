@@ -76,6 +76,10 @@ class NetWireBranch : NetPort {
 			set_send!TrgtClients(listeners, n, listeners.map!(l=>l.msgID).array);
 		}
 	}
+	@RPC!SrcClient(4)
+	void __setFor(float n, ubyte frames) {
+		assert(false, "Unimplemented");
+	}
 	////void __set_getWaiters_send(float value) {
 	////	set_send!TrgtClients(getWaiters, value, getWaiters.map!(l=>l.msgID).array);
 	////}
@@ -88,6 +92,10 @@ class NetWire : NetPort {
 	float lastValue;
 	Client[] listeners;
 	
+	float setForValue;
+	ubyte setIn = 0;
+	float setInTo;
+	
 	this (WirePort* port, ubyte id, ubyte typeID) {
 		super(portType!(typeof(this)), id, typeID);
 		this.port = port;
@@ -95,6 +103,10 @@ class NetWire : NetPort {
 	
 	override
 	void update() {
+		if (port.value != setForValue)
+			setIn = 0;
+		if (setIn > 0 && --setIn == 0)
+			port.setValue(setInTo);
 		if (port.value != lastValue) {
 			lastValue = port.value;
 			set_send!TrgtClients(listeners, port.value, listeners.map!(l=>l.msgID).array);
@@ -103,6 +115,19 @@ class NetWire : NetPort {
 	
 	@RPC!SrcClient(3)
 	void set(float n) {
+		port.setValue(n);
+		port.twitch;
+		setIn = 0;
+		////if (n != lastValue) {
+		////	lastValue = n;
+		////	set_send!TrgtClients(listeners, n, listeners.map!(l=>l.msgID).array);
+		////}
+	}
+	@RPC!SrcClient(4)
+	void setFor(float n, ubyte frames) {
+		setInTo = port.value;
+		setIn = frames;
+		setForValue = n;
 		port.setValue(n);
 		port.twitch;
 		////if (n != lastValue) {

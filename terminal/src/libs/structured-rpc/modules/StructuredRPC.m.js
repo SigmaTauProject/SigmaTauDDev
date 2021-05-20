@@ -28,8 +28,11 @@ function mixinRPCReceive(Cls, config={}) {
 	
 	Object.defineProperty(Cls.prototype, "rpcRecv", {value:
 		function(bytes, src) {
-			let id = config.serializer.deserialize(config.idType, bytes, b=>bytes=b);
+			let id;
+			try {id = config.serializer.deserialize(config.idType, bytes, b=>bytes=b);}
+			catch {return console.error("Network Msg Error: Unable to deserialize rpc id.", bytes);}
 			let rpc = rpcByID[id];
+			if (rpc === undefined) return console.error("Network Msg Error: No rpc with id", id, bytes);
 			let params;
 			
 			let data = Cls["rpc_"+rpc];
@@ -49,7 +52,8 @@ function mixinRPCReceive(Cls, config={}) {
 				else {
 					type = params[i];
 				}
-				args.push(config.serializer.subserializer(...attributes).deserialize(type, bytes, b=>bytes=b));
+				try {args.push(config.serializer.subserializer(...attributes).deserialize(type, bytes, b=>bytes=b));}
+				catch {return console.error("Network Msg Error: Failed to deserialize rpc argument "+i+".", type, bytes, args);}
 			}
 			this[rpc](...args, ...(src==undefined?[]:[src]));
 		}

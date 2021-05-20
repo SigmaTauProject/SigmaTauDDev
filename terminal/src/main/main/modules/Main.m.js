@@ -32,5 +32,15 @@ ws.addEventListener("message",e=>{
 });
 ws.addEventListener("close",e=>console.log("Close ",e));
 
-document.body.innerHTML = `<ui-slider />`;
+document.body.innerHTML = `
+	<ui-radar>
+		<ui-radar-view port="0" />
+	</ui-radar>
+	<ui-slider port="0"></ui-slider>
+	<ui-slider port="1"></ui-slider>
+	<ui-slider port="2"></ui-slider>
+	<ui-slider port="3"></ui-slider>
+	<ui-slider port="4"></ui-slider>
+	<ui-slider port="5"></ui-slider>
+`;
 

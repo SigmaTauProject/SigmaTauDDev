@@ -9,6 +9,16 @@ Object.defineProperty(HTMLElement.prototype, "removeAllChildren", {value:
 	}
 });
 
+Object.defineProperty(HTMLElement.prototype, "querySelectorParent", {value:
+	function (selector) {
+		for (let elem=this; elem && elem !== document; elem = elem.parentNode )
+			if (elem.matches(selector))
+				return elem;
+		return null;
+	}
+});
+
+
 function replaceAll(item, find, replacer) {
 	while (item.indexOf(find) != -1) {
 		item = item.replace(find, replacer)
