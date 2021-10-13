@@ -61,7 +61,8 @@ class Ship : ship_.component_.Ship {
 			auto comp = installComponent!DirectThruster(DirectThruster.Type.fore);
 			connect(comp.port, bridge.wires);
 		}
-		connect(rotCon.controlPort, bridge.wires);
+		////connect(rotCon.controlPort, bridge.wires);
+		connect(thrusterSwitch.inPorts, bridge.wires);
 		{
 			auto comp = installComponent!DirectThruster(DirectThruster.Type.side);
 			connect(comp.port, bridge.wires);
