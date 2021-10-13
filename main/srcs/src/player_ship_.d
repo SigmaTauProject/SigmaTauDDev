@@ -55,37 +55,44 @@ import world_.entity_object_;
 import math.linear.vector;
 import math.linear.point;
 
+import ship_controller_;
+
 import ship_.ship_;
 import ship_.net_.ports_.bridge_;
 import networking_.terminal_networking_;
 
-class PlayerShip : Fiber {
+class PlayerShip : ShipController {
 	ushort port;
 	World world;
+	
+	TerminalServer terminalServer;
+	Entity entity;
+	Ship ship;
+	NetBridge netBridge;
+	
 	this (ushort port, World world) {
 		this.port = port;
 		this.world = world;
-		super(&run);
-		call;
-	}
-	void run() {
-		auto terminalServer = new TerminalServer(port);
-		auto entity = new Entity(fineShipObject,pvec(48.fromFloat!long,0.fromFloat!long),vec(0,0), 16384*0);
-		auto ship = new Ship(world, entity);
-		auto netBridge = new NetBridge(ship.bridge);
 		
-		while (true) {
-			netBridge.updateSend;
-			
-			yield;
-			
-			terminalServer.update;
-			auto newClients = terminalServer.getNewTerminals;
-			if (newClients.length)
-				netBridge.newClients(newClients);
-			netBridge.update;
-			
-			ship.update;
-		}
+		terminalServer = new TerminalServer(port);
+		entity = new Entity(fineShipObject,pvec(48.fromFloat!long,0.fromFloat!long),vec(0,0), 16384*0);
+		ship = new Ship(world, entity);
+		netBridge = new NetBridge(ship.bridge);
+		
+		netBridge.updateSend;
+	}
+	
+	override void update() {
+		terminalServer.update;
+		
+		auto newClients = terminalServer.getNewTerminals;
+		if (newClients.length)
+			netBridge.newClients(newClients);
+		
+		netBridge.update;
+		
+		ship.update	;
+		
+		netBridge.updateSend;
 	}
 }

@@ -6,6 +6,8 @@ import std.algorithm;
 
 import sigtrace;
 
+import updaterate_;
+
 import world_.world_;
 import world_.entity_;
 import world_.entity_object_;
@@ -35,13 +37,12 @@ void main() {
 	];
 	
 	while (true) {
-		auto loopStartTime = MonoTime.currTime;
+		auto startTime = MonoTime.currTime;
 		
-		ships.each!(ship=>ship.call);
+		world.update();
+		ships.each!(ship=>ship.update());
 		
-		world.update;
-		
-		Thread.sleep(max(0.msecs, 100.msecs - (MonoTime.currTime - loopStartTime)));
+		Thread.sleep(max(0.msecs, updaterate - (MonoTime.currTime - startTime)));
 		////if (readln()=="q")
 		////	break;
 	}

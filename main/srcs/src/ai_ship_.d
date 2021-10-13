@@ -12,41 +12,40 @@ import world_.entity_view_;
 import math.linear.vector;
 import math.linear.point;
 
+import ship_controller_;
+
 import ship_.ship_;
 
-class AIShip : Fiber {
+class AIShip : ShipController {
 	World world;
+	
+	Entity entity;
+	Ship ship;
+	
+	EntityView target;
+	
 	this (World world) {
 		this.world = world;
-		super(&run);
-		call;
-	}
-	void run() {
-		auto entity = new Entity(shipObject,pvec(96.fromFloat!long,16.fromFloat!long),vec(0,0), 16384*0);
-		auto ship = new Ship(world, entity);
 		
-		EntityView target;
-		while (true) {
+		entity = new Entity(shipObject,pvec(-96.fromFloat!long,16.fromFloat!long),vec(0,0), 16384*0);
+		ship = new Ship(world, entity);
+	}
+	
+	override void update() {
+		if (!target) {
 			try {
 				target = EntityView(world.entities.find!(e=>e.object==fineShipObject)[0], entity);
-				break;
 			}
-			catch (RangeError) {
-				yield;
-			}
+			catch (RangeError) {}
+			return;
 		}
 		
-		while (true) {
-			yield;
-			
-			ship.bridge.wires[3].setValue(atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x)/PI);
-			
-			import std.stdio;
-			if (100 > abs(entity.ori - atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x).oriFromRadians)) {
-				ship.bridge.pings[0].ping;
-			}
-			
-			ship.update;
+		ship.bridge.wires[3].setValue(atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x)/PI);
+		
+		if (100 > abs(entity.ori - atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x).oriFromRadians)) {
+			ship.bridge.pings[0].ping;
 		}
+		
+		ship.update	;
 	}
 }

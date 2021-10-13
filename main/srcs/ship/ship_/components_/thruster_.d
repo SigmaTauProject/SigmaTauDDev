@@ -48,7 +48,7 @@ class DirectThruster : ThrusterBase {
 				ship.entity.applyImpulseCentered(vec(0, port.value));
 				break;
 			case Type.rot:
-				ship.entity.applyForceAngular(port.value/8);
+				ship.entity.applyImpulseAngular(port.value/8);
 				break;
 		}
 	}
