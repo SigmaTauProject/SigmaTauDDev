@@ -5,11 +5,10 @@ import structuredrpc;
 import std.traits;
 import std.algorithm;
 
-import ship_.net_.ports_.bridge_;
-import ship_.net_.ports_.wire_;
-import ship_.net_.ports_.ping_;
-import ship_.net_.ports_.radar_;
-import ship_.net_.ports_.spawner_;
+import ship_.components_.bridge_: portNames;
+static foreach (portName; portNames) {
+	mixin("import ship_.net_.ports_."~portName~"_;");
+}
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
