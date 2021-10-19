@@ -13,25 +13,15 @@ import ship_.net_.ports_.spawner_;
 
 public import networking_.terminal_connection_: Client = TerminalConnection;
 
-struct PortClass(alias Class) {
-	alias PortClass = Class;
-}
-
-// TODO: Remove enum PortType @PortClass as that is done by string of name now.
 enum PortType : ubyte {
-	@PortClass!NetBridge	bridge	,
-	@PortClass!NetWire	wire	,
-////	@PortClass!WireInPort	wireIn	,
-////	@PortClass!WireOutPort	wireOut	,
-	@PortClass!NetPing	ping	= 4,
-	@PortClass!NetRadar	radar	= 5,
-	@PortClass!NetSpawner	spawner	,
+	bridge	,
+	wire	,
+////	wireIn	,
+////	wireOut	,
+	ping	= 4,
+	radar	= 5,
+	spawner	,
 }
-mixin(enumMemberUDAFixMixin!"PortType");// Necessary because of D bug #20835
-enum enumMemberUDAFixMixin(string enumName) = q{
-	static foreach(i; 0..EnumMembers!}~enumName~q{.length)
-		pragma(msg, __traits(getAttributes, EnumMembers!}~enumName~q{[i]));
-};
 
 enum SrcServer;
 enum SrcClient;
@@ -84,12 +74,17 @@ class NetPort {
 	void recvClientMsg(Client client, const(ubyte)[] msg);
 }
 
-template portType(This) {
+template portType(This) if (__traits(identifier, This)[0..3] == "Net" && is(This : NetPort)) {
+	import std.ascii;
 	// Magic to automatically set PortType; using Type and PortClass UDA defined on PortType members.
-	static foreach(type; EnumMembers!PortType) {
-		static if (getUDAs!(EnumMembers!PortType[[EnumMembers!PortType].countUntil(type)], PortClass!(This.RootT)).length)
-			enum portType = type;
-	}
+	static if (__traits(identifier, This)[$-6..$] == "Branch")
+		enum portType = mixin("PortType."~__traits(identifier, This)[3].toLower ~ __traits(identifier, This)[4..$-6]);
+	else
+		enum portType = mixin("PortType."~__traits(identifier, This)[3].toLower ~ __traits(identifier, This)[4..$]);
+}
+template PortTypeType(PortType type) {
+	import std.ascii; import std.conv;
+	alias PortTypeType = mixin("Net"~x.to!string[0].toUpper ~ x.to!string[1..$]);
 }
 
 mixin template NetPortMixin(bool isRoot, Other) {
