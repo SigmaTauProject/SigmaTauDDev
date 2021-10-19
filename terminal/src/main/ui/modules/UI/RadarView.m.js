@@ -9,7 +9,7 @@ class RadarView  extends UIWithPort {
 	
 	static portType = PortType.radar;
 	
-	onPortChanged(newEntities, removedEntities, entities) {
+	portListenCallback(newEntities, removedEntities, entities) {
 		newEntities.map((entity, i)=>{
 			this.shipEls.push	([ svg("polygon", "entity", Div.attributes({points:entity.shape.map(p=>p[0]+","+p[1]).join(" ")}))
 				, svg("circle", "entity", Div.attributes({r:entity.radius, stroke:"black", "stroke-width":"0.05", fill:"none",}))

@@ -30,7 +30,7 @@ class Slider extends UIWithPort {
 		this.appendChild(this.el);
 	}
 	
-	onPortChanged(v) {
+	portListenCallback(v) {
 		console.log("Wire value changed.");
 		if (this.inputEl.value != v)
 			this.inputEl.value = v;

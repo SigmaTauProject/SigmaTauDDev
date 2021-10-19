@@ -13,22 +13,6 @@ import Ptr from "/modules/Ptr.m.js";
 ////import {Radar} from "/modules/UI/Radar.m.js";
 ////import {RadarView} from "/modules/UI/RadarView.m.js";
 ////import {RadarSpawner} from "/modules/UI/RadarSpawner.m.js";
-import {WireKeys, PingKey} from "/modules/UI/Keys.m.js";
-
-
-////var wirePortKeys = [
-////	port=>new WireKeys(port, "KeyN", {negKey:"KeyH",}),
-////	port=>new WireKeys(port, "KeyE", {negKey:"Comma",}),
-////	port=>new WireKeys(port, "KeyR", {negKey:"KeyW",}),
-////];
-var wirePortKeys = [
-	port=>new WireKeys(port, "KeyN", {negKey:"KeyH",}),
-	port=>new WireKeys(port, "KeyE", {negKey:"Comma", step:1}),
-	port=>new WireKeys(port, "KeyR", {negKey:"KeyW",}),
-];
-var pingPortKeys = [
-	port=>new PingKey(port, "Space"),
-];
 
 export
 class Bridge extends Port {
@@ -58,9 +42,6 @@ class Bridge extends Port {
 		this.allPorts[portID].rpcRecv(msgData, Src.server);
 	}
 	
-	//---Messages
-	static rpc_updatePorts	= [0, SerialType.array(SerialType.uint8), SerialType.array(SerialType.tuple(SerialType.uint8,SerialType.uint8))];
-	
 	attachUI(type, typeID, callback) {
 		this.ports[type] ||= [];
 		(this.ports[type][typeID] ||= new NullPort()).attachUI(callback);
@@ -69,6 +50,10 @@ class Bridge extends Port {
 		this.ports[type][typeID].unattachUI(callback);
 	}
 	
+	//---Messages
+	static rpc_updatePorts	= [0, SerialType.array(SerialType.uint8), SerialType.array(SerialType.tuple(SerialType.uint8,SerialType.uint8))];
+	static rpc_update	= [1];
+	
 	updatePorts(removed, added) {
 		removed.forEach(r=> {
 			this.ports[this.ports[r].typeID];
@@ -76,6 +61,9 @@ class Bridge extends Port {
 			this.ports[r] = new NullPort(...this.ports[r].uis);
 		});
 		added.forEach(a=>this.addPort(...a));
+	}
+	update() {
+		this.allPorts.forEach(port=>port.type!=PortType.bridge&&port.uis.forEach(ui=>ui.update?.()));
 	}
 	
 	addPort(type, typeID) {
@@ -120,11 +108,6 @@ class Bridge extends Port {
 		port.attachUI(...this.ports[port.type][port.typeID]?.uis || []);
 		this.ports[port.type][port.typeID] = port;
 		
-		if (port.type == PortType.wire) {
-		////	document.body.appendChild(new Slider(port).el);
-			if (wirePortKeys.length)
-				wirePortKeys.splice(0,1)[0](port);
-		}
 		////else if (port.type == PortType.radar) {
 		////	window.radar = new Radar();
 		////	radar.el.style.maxHeight = "100vh";

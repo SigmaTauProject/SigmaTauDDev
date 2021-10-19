@@ -46,6 +46,10 @@ class NetBridgeBranch : NetPort {
 		////}
 		////__plugInPorts(types.map!((PortType t)=>addPort(t)).array);
 	}
+	@RPC!SrcServer(1)
+	void __update() {
+		assert(false, "Unimplemented");
+	}
 	
 	////void __plugInPorts(NetPort[] newPorts...) {
 	////	assert(ports.length + newPorts.length <= typeof(NetPort.id).max);
@@ -127,6 +131,7 @@ class NetBridge : NetPort {
 			updatePorts_send!TrgtClients(clients, removedPorts, addedPorts);
 		foreach (port; ports[1..$])
 			port.update;
+		update_send!TrgtClients(clients);
 	}
 	override
 	void update() {

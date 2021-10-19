@@ -12,6 +12,7 @@ const PortType = {
 	spawner	: 6,
 	unknown	: -1,
 }
+window.PortType = PortType;
 
 export
 const Src = {
@@ -32,7 +33,7 @@ class NullPort {
 		this.uis.push(...uis);
 		if (this.constructor!=NullPort)
 			for (let ui of uis)
-				ui(this);
+				ui.attachPort(this);
 	}
 	unattachUI(...uis) {
 		for (let ui of uis) {
@@ -40,7 +41,7 @@ class NullPort {
 			console.assert(i != -1);
 			this.uis.splice(i,1);
 			if (this.constructor != NullPort)
-				ui(null, this);
+				ui.attachPort(null, this);
 		}
 	}
 }

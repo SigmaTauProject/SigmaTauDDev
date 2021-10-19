@@ -42,5 +42,11 @@ document.body.innerHTML = `
 	<ui-slider port="3"></ui-slider>
 	<ui-slider port="4"></ui-slider>
 	<ui-slider port="5"></ui-slider>
+	
+	<ui-wire-keys port="0" key="KeyN" negKey="KeyH"></ui-wire-keys>
+	<ui-wire-keys port="1" key="KeyE" negKey="Comma"></ui-wire-keys>
+	<ui-wire-keys port="2" key="KeyR" negKey="KeyW"></ui-wire-keys>
+	
+	<ui-ping-key port="0" key="Space"></ui-ping-key>
 `;
 
