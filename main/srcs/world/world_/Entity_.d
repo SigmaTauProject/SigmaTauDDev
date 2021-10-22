@@ -52,34 +52,28 @@ class Entity {
 }
 
 WorldPos[] traject(Entity entity, Entity[] gravityWells, size_t steps) {
-	with (entity) {
-		foreach(i; entity.trajectory.length..steps) {
-			switch (i) {
-				case 0:
-					trajectory ~= pos+vel;
-					break;
-				case 1:
-					trajectory ~= trajectory[0]+vel+sum(gravityWells.map!(w=>(gravitationalPull(trajectory[i-1], entity.object, w) / entity.object.mass).fromRelT!WorldVelT));
-					break;
-				default:
-					trajectory ~= trajectory[i-1]+(trajectory[i-1]-trajectory[i-2])+sum(gravityWells.map!(w=>(gravitationalPull(trajectory[i-1], entity.object, w) / entity.object.mass).fromRelT!WorldVelT));
-					break;
-			}
-		}
-		return trajectory[0..steps];
+	foreach(i; entity.trajectory.length..steps) {
+		WorldPos pos = entity.pos;
+		WorldVel vel = entity.vel;
+		if (i > 0)
+			pos = entity.trajectory[i-1];
+		if (i > 1)
+			vel = (entity.trajectory[i-1] - entity.trajectory[i-2]).castType!WorldVelT;
+		entity.trajectory ~= pos+vel+sum(gravityWells.map!(w=>(gravitationalPull(pos, entity.object, w) / entity.object.mass).fromRelT!WorldVelT));
 	}
+	return entity.trajectory[0..steps];
 }
 
 Imp gravitationalPull(Entity entity, Entity gravityWell) {
 	return gravitationalPull(entity.pos, entity.object, gravityWell);
 }
 Imp gravitationalPull(WorldPos pos, EntityObject object, Entity gravityWell) {
-	return	( 0.000000000001f
+	return	( 0.0001f
 		* (cast(float) pow(gravityWell.object.mass +1, 3) -1)
 		* (object.mass)
-		/ (cast(float) pow(distance(gravityWell.pos.toRelT, pos.toRelT) +1, 1.5) -1)
+		/ (cast(float) pow(distance(gravityWell.pos.toRelT, pos.toRelT), 2))
 		/ 65536f
-		* (gravityWell.pos - pos)
+		* (gravityWell.pos - pos).castType!float.normalized
 		)
 		.map!(a=>a.isNaN||a.isInfinity?0:a);
 }
