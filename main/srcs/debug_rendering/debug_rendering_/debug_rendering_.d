@@ -1,24 +1,20 @@
 module debug_rendering_.debug_rendering_; 
 
+import std.algorithm;
+
 import bindbc.sdl;
 import debug_rendering_._edl_;
 
+import world_;
 import math.linear.vector;
 import math.linear.point;
-
-import world_.world_;
-
-////extern(C) int SDL_RenderGeometry(void* renderer,
-////                                               void* texture,
-////                                               void* vertices, int num_vertices,
-////                                               int* indices, int num_indices);
 
 class DebugRendering {
 	Window* window;
 	Renderer* renderer;
 	
 	float zoom;
-	Vec2!float pos;
+	RelPos pos;
 	Viewer viewer;
 	
 	class Viewer {
@@ -46,7 +42,7 @@ class DebugRendering {
 	
 	this(World world) {
 		this.world = world;
-		pos = vec(0f,0);
+		pos = pvec(0f,0);
 		zoom = 0.0001;
 		viewer = new Viewer;
 		
@@ -79,6 +75,12 @@ class DebugRendering {
 				}
 			}
 			else {
+				if (event.type == keydown) {
+					if (event.key.keysym.sym == SDLK_e) {
+						import std.stdio;
+						writeln(world.physicsWorld.entities.length);
+					}
+				}
 				viewer.event(event);
 			}
 		}
@@ -86,14 +88,23 @@ class DebugRendering {
 		renderer.setRenderDrawColor(0,0,0, 255);
 		renderer.renderClear;
 		
-		renderer.setRenderDrawColor(0, 255, 255, 255);
 		foreach (entity; world.physicsWorld.entities) {
-			int s = cast(int)(entity.object.broadRadius*zoom*1.4);
-			Rect rect = {cast(int)((entity.pos.x-pos.x)*zoom-s/2)+renderSize[0]/2, cast(int)((entity.pos.y-pos.y)*zoom-s/2)+renderSize[1]/2, s, s};
-			renderer.renderDrawRect(&rect);
+			renderer.setRenderDrawColor(0,255,255, 255);
+			drawSpot(entity.pos, max(2, cast(int)(entity.object.broadRadius*zoom*1.4)));
+			if (entity.object == fineShipObject) {
+				import std.stdio; if (entity.trajectory.length == 0) writeln("Fully recreating trajectory!");
+				foreach_reverse (i,traj; entity.traject(world.physicsWorld.gravityWells, 16*16*16)) {
+					renderer.setRenderDrawColor(cast(ubyte)max(16,min(255*2 - cast(long)i/2, 255)),cast(ubyte)max(0,255 - cast(long)i/2),0, 255);
+					drawSpot(traj, 2);
+				}
+			}
 		}
 		
 		renderer.renderPresent;
 	}
 	
+	void drawSpot(WorldPos p, int size) {
+		Rect rect = {cast(int)((p.x-pos.x)*zoom-size/2)+renderSize[0]/2, cast(int)((p.y-pos.y)*zoom-size/2)+renderSize[1]/2, size, size};
+		renderer.renderDrawRect(&rect);
+	}
 }

@@ -5,10 +5,7 @@ import core.exception;
 import std.math;
 import std.algorithm;
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
-import world_.entity_view_;
+import world_;
 import math.linear.vector;
 import math.linear.point;
 
@@ -27,7 +24,7 @@ class AIShip : ShipController {
 	this (World world) {
 		this.world = world;
 		
-		entity = new Entity(shipObject,pvec(-96.fromFloat!long,16.fromFloat!long),vec(0,0), 16384*0);
+		entity = new Entity(shipObject,pvec(-96.fromRelT!WorldPosT,16.fromRelT!WorldPosT),vec(0,0), 16384*0);
 		ship = new Ship(world, entity);
 	}
 	
@@ -42,7 +39,7 @@ class AIShip : ShipController {
 		
 		ship.bridge.wires[3].setValue(atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x)/PI);
 		
-		if (100 > abs(entity.ori - atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x).oriFromRadians)) {
+		if (100 > abs(entity.ori - atan2(cast(float) target.entity.pos.y-target.root.pos.y, cast(float) target.entity.pos.x-target.root.pos.x).fromRadians!Ori)) {
 			ship.bridge.pings[0].ping;
 		}
 		

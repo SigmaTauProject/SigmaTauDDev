@@ -5,10 +5,7 @@ import std.algorithm;
 import std.range;
 import std.traits;
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
-import world_.entity_view_;
+import world_;
 import math.linear.vector;
 import math.linear.point;
 

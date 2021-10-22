@@ -8,9 +8,9 @@ import sigtrace;
 
 import updaterate_;
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
+import world_.World_;
+import world_.Entity_;
+import world_.Entity_Object_;
 import math.linear.vector;
 import math.linear.point;
 
@@ -31,7 +31,7 @@ void main() {
 		world.addEntity(entity);
 		world.physicsWorld.gravityWells ~= entity;
 	}
-	world.addEntity(new Entity(stationObject, pvec(0L,128.fromFloat!long),vec((0.5).fromFloat!int,0), 16384*0));
+	world.addEntity(new Entity(stationObject, pvec(0f,128f).fromRelT!WorldPosT,vec(0.5f,0).fromRelT!WorldVelT, 16384*0));
 	
 	auto ships = [
 		new PlayerShip(8080, world)	,

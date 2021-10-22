@@ -4,10 +4,7 @@ import std.experimental.typecons;
 import std.algorithm;
 import std.range;
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
-import world_.entity_view_;
+import world_;
 import math.linear.vector;
 import math.linear.point;
 
@@ -47,7 +44,7 @@ class Radar : Component {
 			}
 		}
 		port.change(
-			newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toFloat, cast(float[2][]) e.object.collisionPoly.points)).array,
+			newEntities.map!(e=>RadarEntityObject(e.object.broadRadius.toRelT, cast(float[2][]) e.object.collisionPoly.points)).array,
 			removedEntities,
 			entities.map!(e=>EntityView(e, ship.entity)).map!(e=>RadarEntity(e.pos.vector.data, e.ori, e.vel.data)).array,
 		);

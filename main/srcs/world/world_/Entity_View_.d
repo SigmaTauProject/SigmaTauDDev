@@ -1,17 +1,14 @@
-module world_.entity_view_;
+module world_.Entity_View_;
 
-import world_.entity_;
+import world_.Entity_;
 
 import std.math;
 import math.tau;
 
 import math.linear.vector;
 import math.linear.point;
-import math.loopnum;
 
-alias RelPos = PVec2!float;
-alias RelVel = Vec2!float;
-
+public import world_.entity_.Types_;
 
 struct EntityView {
 	Entity entity	;
@@ -48,32 +45,32 @@ struct EntityView {
 
 
 RelPos relPos(WorldPos pos, Entity root) {
-	return ((pos - root.pos).castType!float / 65536).rotate(- root.ori.toRadians).point;
+	return point((pos - root.pos).toRelT.rotate(- root.ori.toRadians));
 }
 WorldPos posRel(RelPos pos, Entity root) {
-	return point((pos.vector.rotate(root.ori.toRadians) * 65536).castType!long + root.pos.vector);
+	return point(pos.vector.rotate(root.ori.toRadians).fromRelT!WorldPosT + root.pos.vector);
 }
 
 RelVel relVel(WorldVel vel, Entity root) {
-	return ((vel - root.vel).castType!float / 65536).rotate(- root.ori.toRadians);
+	return (vel - root.vel).toRelT.rotate(- root.ori.toRadians);
 }
 WorldVel velRel(RelVel vel, Entity root) {
-	return (vel.rotate(root.ori.toRadians) * 65536).castType!int + root.vel;
+	return vel.rotate(root.ori.toRadians).fromRelT!WorldVelT + root.vel;
 }
 
 Ori relOri(Ori ori, Entity root) {
-	return cast(ushort)(ori - root.ori);
+	return cast(Ori)(ori - root.ori);
 }
 Ori oriRel(Ori ori, Entity root) {
-	return cast(ushort)(ori + root.ori);
+	return cast(Ori)(ori + root.ori);
 }
 
 
 void applyImpulseCentered(Entity entity, Imp impulse) {
-	entity.vel += ((impulse / entity.object.mass) * 65536).rotate(entity.ori.toRadians).castType!int;
+	entity.vel += (impulse / entity.object.mass).rotate(entity.ori.toRadians).fromRelT!WorldVelT;
 }
 void applyImpulseAngular(Entity entity, Ani impulse) {
-	entity.anv += (impulse / entity.object.inertia).anvFromRadians;
+	entity.anv += (impulse / entity.object.inertia).fromRadians!Anv;
 }
 void applyImpulse(Entity entity, Imp impulse, RelPos pos) {
 	entity.applyImpulseCentered(impulse);
@@ -81,7 +78,7 @@ void applyImpulse(Entity entity, Imp impulse, RelPos pos) {
 }
 
 void applyForceAngular(Entity entity, float f) {
-	entity.ana += (f / entity.object.inertia).anvFromRadians;
+	entity.ana += (f / entity.object.inertia).fromRadians!Anv;
 }
 
 

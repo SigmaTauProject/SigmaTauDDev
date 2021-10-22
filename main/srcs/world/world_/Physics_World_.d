@@ -1,10 +1,10 @@
-module world_.physics_world_;
+module world_.Physics_World_;
 
 import std.math;
 import std.algorithm;
 
-import world_.entity_;
-import world_.entity_object_;
+import world_.Entity_;
+import world_.Entity_Object_;
 
 import math.linear.vector;
 import math.linear.point;
@@ -137,16 +137,13 @@ class PhysicsWorld {
 			entities[e].anv += entities[e].ana;
 			entities[e].ana = 0;
 			foreach (w; gravityWells) {
-				entities[e].applyWorldImpulseCentered(
-					( 0.000000000001f
-					* (cast(float) pow(w.object.mass +1, 3) -1)
-					* (entities[e].object.mass)
-					/ (cast(float) pow(distance(w.pos.toFloat, entities[e].pos.toFloat) +1, 1.5) -1)
-					/ 65536f
-					* (w.pos - entities[e].pos)
-					)
-					.map!(a=>a.isNaN||a.isInfinity?0:a)
-				);
+				entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
+			}
+			if (entities[e].trajectory.length) {
+				if (entities[e].trajectory[0] == entities[e].pos)
+					entities[e].trajectory = entities[e].trajectory[1..$];
+				else
+					entities[e].trajectory.length = 0;
 			}
 		}
 		

@@ -5,10 +5,7 @@ import std.algorithm;
 import std.range;
 import std.math;
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
-import world_.entity_view_;
+import world_;
 import math.linear.vector;
 import math.linear.point;
 
@@ -69,7 +66,7 @@ class HeadingController : Component {
 		////}
 		
 		import std.stdio;
-		float ma = anvFromRadiansf((1/ 8f) / ship.entity.object.inertia);
+		float ma = fromRadians!float((1/ 8f) / ship.entity.object.inertia);
 		float ma8 = ma*0.8f;
 		short d = cast(short) (cast(short) (controlPort.value * 32768) - ship.entity.ori);
 		////auto sq = (ma*0.8f)*d*2f;

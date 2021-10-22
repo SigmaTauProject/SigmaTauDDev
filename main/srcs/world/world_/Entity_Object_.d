@@ -1,11 +1,11 @@
-module world_.entity_object_;
+module world_.Entity_Object_;
 
 import std.math;
 import math.tau;
 
 import math.linear.vector;
 
-import world_.entity_;
+import world_.Entity_;
 
 
 class EntityObject {
@@ -19,7 +19,7 @@ class EntityObject {
 	this(CollisionPoly collisionPoly, int broadRadius) {
 		this.collisionPoly = collisionPoly;
 		this.broadRadius = broadRadius;
-		auto r2 = broadRadius.toFloat * broadRadius.toFloat;
+		auto r2 = broadRadius.toRelT * broadRadius.toRelT;
 		this.mass	= r2 * PI	;
 		this.inertia	= mass * r2 / 2	;
 	}

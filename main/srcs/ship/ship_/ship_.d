@@ -6,10 +6,10 @@ import accessors;
 import std.traits;
 import std.typecons;
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
-import world_.entity_view_;
+import world_.World_;
+import world_.Entity_;
+import world_.Entity_Object_;
+import world_.Entity_View_;
 
 import math.linear.vector;
 import math.linear.point;

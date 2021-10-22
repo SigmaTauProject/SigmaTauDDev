@@ -49,9 +49,7 @@ import core.thread.fiber;
 ////	}
 ////}
 
-import world_.world_;
-import world_.entity_;
-import world_.entity_object_;
+import world_;
 import math.linear.vector;
 import math.linear.point;
 
@@ -75,7 +73,7 @@ class PlayerShip : ShipController {
 		this.world = world;
 		
 		terminalServer = new TerminalServer(port);
-		entity = new Entity(fineShipObject,pvec(48.fromFloat!long,0.fromFloat!long),vec(0,0), 16384*0);
+		entity = new Entity(fineShipObject,pvec(48f,0f).fromRelT!WorldPosT,vec(0,0), 16384*0);
 		ship = new Ship(world, entity);
 		netBridge = new NetBridge(ship.bridge);
 		
