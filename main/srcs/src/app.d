@@ -14,6 +14,8 @@ import world_.entity_object_;
 import math.linear.vector;
 import math.linear.point;
 
+import debug_rendering_.debug_rendering_;
+
 import player_ship_;
 import ai_ship_;
 
@@ -23,7 +25,7 @@ import core.thread;
 
 void main() {
 	World world = new World;
-	
+	DebugRendering debugRendering = new DebugRendering(world);
 	{
 		auto entity = new Entity(planetObject, pvec(0L,0),vec(0,0), 16384*0);
 		world.addEntity(entity);
@@ -41,6 +43,7 @@ void main() {
 		
 		world.update();
 		ships.each!(ship=>ship.update());
+		debugRendering.update();
 		
 		Thread.sleep(max(0.msecs, updaterate - (MonoTime.currTime - startTime)));
 		////if (readln()=="q")

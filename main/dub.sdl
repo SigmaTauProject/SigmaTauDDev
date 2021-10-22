@@ -113,11 +113,32 @@ subPackage {
 	dependency "loopnum" version="~>1.0.0-beta"
 }
 
+subPackage {
+	name	"debug_rendering"
+	targetType	"library"
+	targetPath	"../dist"
+	sourcePaths	"srcs/debug_rendering" "srcs/glob"
+	importPaths	"srcs/debug_rendering" "srcs/glob"
+	
+	dependency "cst" version="~>1.0"
+	dependency "tau" version="~>1.0"
+	
+	dependency "linear" version="~>1.0.0-beta"
+	dependency "geometry" version="~>1.0.0-beta"
+	
+	dependency "bindbc-sdl" version="~>0.19"
+	versions "BindSDL_Static" "SDL_Image"
+	libs "SDL2"
+	
+	dependency "sigma_tau:world" version="*"
+}
+
 dependency "sigma_tau:ship" version="*"
 dependency "sigma_tau:ship_net" version="*"
 dependency "sigma_tau:terminal_networking" version="*"
 dependency "sigma_tau:terminal_connection" version="*"
 dependency "sigma_tau:world" version="*"
+dependency "sigma_tau:debug_rendering" version="*"
 
 dependency "cst" version="~>1.0"
 
