@@ -10,6 +10,64 @@ import math.linear.vector;
 import math.linear.point;
 import math.geometry.line;
 
+/// Data used within the physics update, invalid anytime else.
+abstract class PhysicsOnlyEntity {
+	package(world_):
+	
+	float playAhead = 0.0; // The % of the tick position has been updated to.
+	
+	WorldPosT left;
+	WorldPosT right;
+	WorldPosT bottom;
+	WorldPosT top;
+}
+
+void setEdges(Entity entity) { with(entity) {
+	assert(playAhead == 0);
+	if (vel.x >= 0) {
+		left = pos.x - object.broadRadius;
+		right = pos.x + vel.x + object.broadRadius;
+	}
+	else {
+		left = pos.x + vel.x - object.broadRadius;
+		right = pos.x + object.broadRadius;
+	}
+	if (vel.y >= 0) {
+		bottom = pos.y - object.broadRadius;
+		top = pos.y + vel.y + object.broadRadius;
+	}
+	else {
+		bottom = pos.y + vel.y - object.broadRadius;
+		top = pos.y + object.broadRadius;
+	}
+}}
+void setEdges1(Entity entity) { with(entity) {
+	assert(playAhead == 1);
+	left = pos.x - object.broadRadius;
+	right = pos.x + object.broadRadius;
+	bottom = pos.y - object.broadRadius;
+	top = pos.y + object.broadRadius;
+}}
+void setEdgesPlayAhead(Entity entity) { with(entity) {
+	auto workingVel = entity.velTo(1);
+	if (workingVel.x >= 0) {
+		left = pos.x - object.broadRadius;
+		right = pos.x + workingVel.x + object.broadRadius;
+	}
+	else {
+		left = pos.x + workingVel.x - object.broadRadius;
+		right = pos.x + object.broadRadius;
+	}
+	if (workingVel.y >= 0) {
+		bottom = pos.y - object.broadRadius;
+		top = pos.y + workingVel.y + object.broadRadius;
+	}
+	else {
+		bottom = pos.y + workingVel.y - object.broadRadius;
+		top = pos.y + object.broadRadius;
+	}
+}}
+
 class PhysicsWorld {
 	Entity[] entities;
 	Entity[] gravityWells;
@@ -22,34 +80,32 @@ class PhysicsWorld {
 	void update() {
 		if (entities.length == 0) return;
 		
-		void sweep() {
-			foreach (e; 1 .. entities.length) {
-				if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius) {
-					Entity entity = entities[e];
-					do {
-						entities[e] = entities[e-1];
-						e--;
-					} while (e > 0 && entity.pos.x + min(0, entity.vel.x) - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius);
-					entities[e] = entity;
-				}
-			}
-		}
-		/// returns new location of e
-		size_t resort(size_t e) {
-			auto entity = entities[e];
-			size_t o;
-			if (e < entities.length-1 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].object.broadRadius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].object.broadRadius) {
-				do {
-					entities[e] = entities[e+1];
-					e++;
-				} while (e < entities.length-1 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.object.broadRadius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].object.broadRadius);
-				entities[e] = entity;
-			}
-			else if (e > 0 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].object.broadRadius) {
+		void sweep(size_t e) {
+			Entity entity = entities[e];
+			if (entity.left < entities[e-1].right) {
 				do {
 					entities[e] = entities[e-1];
 					e--;
-				} while (e > 0 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.object.broadRadius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].object.broadRadius);
+				} while (e > 0 && entity.left < entities[e-1].right);
+				entities[e] = entity;
+			}
+		}
+		/// Return new `e` (where `entities[e]` was moved to).
+		size_t resort(size_t e) {
+			auto entity = entities[e];
+			size_t o;
+			if (e < entities.length-1 && entities[e].left > entities[e+1].left) {
+				do {
+					entities[e] = entities[e+1];
+					e++;
+				} while (e < entities.length-1 && entities[e].left > entities[e+1].left);
+				entities[e] = entity;
+			}
+			else if (e > 0 && entities[e].left < entities[e-1].left) {
+				do {
+					entities[e] = entities[e-1];
+					e--;
+				} while (e > 0 && entities[e].left < entities[e-1].left);
 				entities[e] = entity;
 			}
 			return e;
@@ -60,10 +116,9 @@ class PhysicsWorld {
 			//---Find Collisions
 			Collision*[] collisions = [];
 			{
-				auto until = entities[e].pos.x + max(0, entities[e].vel.x) + entities[e].object.broadRadius;
 				bool broke = false;
 				foreach (o; e+1 .. entities.length) {
-					if (until < entities[o].pos.x + min(0, entities[o].vel.x) - entities[o].object.broadRadius)
+					if (entities[e].right < entities[o].left)
 						break;
 					auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
 					if (colTime >= 0 && colTime < upTo)
@@ -80,9 +135,8 @@ class PhysicsWorld {
 				//---Handle Any Earlier Collision Of Other Entities
 				bool anythingHappened = false;
 				{
-					auto until = entities[col.o].pos.x + max(0, entities[col.o].vel.x) + entities[col.o].object.broadRadius;
 					foreach (i; e+1 .. entities.length) {
-						if (until < entities[i].pos.x + min(0, entities[i].vel.x) - entities[i].object.broadRadius)
+						if (entities[col.o].right < entities[i].left)
 							break;
 						anythingHappened = anythingHappened || handleEntity(i, col.at);
 					}
@@ -93,8 +147,8 @@ class PhysicsWorld {
 					//---Enact Collision
 					entities[e].pos += entities[e].velTo(col.at);
 					entities[col.o].pos += entities[col.o].velTo(col.at);
-					entities[e].playAhead = col.at;
-					entities[col.o].playAhead = col.at;
+					entities[e].playAhead = col.at;	entities[e].setEdgesPlayAhead;
+					entities[col.o].playAhead = col.at;	entities[col.o].setEdgesPlayAhead;
 					//---Collision Resolution
 					entities[e].vel = vec([0,0]);
 					entities[col.o].vel = vec([0,0]);
@@ -127,18 +181,24 @@ class PhysicsWorld {
 		}
 		
 		void startEntity(size_t e) {
+			//---Reset
 			entities[e].collisions = [];
-		}
-		
-		void finishEntity(size_t e) {
-			entities[e].pos += entities[e].vel * cast(long) ((1 - entities[e].playAhead) * 65536) / 65536;
-			entities[e].playAhead = 1;
-			entities[e].ori += entities[e].anv + entities[e].ana/2;
-			entities[e].anv += entities[e].ana;
-			entities[e].ana = 0;
+			
+			//---Gravity
 			foreach (w; gravityWells) {
 				entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
 			}
+			
+			//---Setup
+			entities[e].playAhead = 0;	entities[e].setEdges;
+		}
+		
+		void finishEntity(size_t e) {
+			entities[e].pos += entities[e].velTo(1);
+			entities[e].playAhead = 1;	entities[e].setEdges1;
+			entities[e].ori += entities[e].anv + entities[e].ana/2;
+			entities[e].anv += entities[e].ana;
+			entities[e].ana = 0;
 			if (entities[e].trajectory.length) {
 				if (entities[e].trajectory[0] == entities[e].pos)
 					entities[e].trajectory = entities[e].trajectory[1..$];
@@ -148,18 +208,18 @@ class PhysicsWorld {
 		}
 		
 		//---Sweep
-		sweep;
-		
-		//---Collisions
-		for (auto e=0; e<entities.length; e++) {
+		foreach (e; 0..entities.length) {
 			startEntity(e);
-			if (e != entities.length-1)
-				handleEntity(e);
-			finishEntity(e);
+			if (e != 0)
+				sweep(e);
 		}
 		
-		//---Reset
-		entities.each!(e=>e.playAhead=0);
+		//---Collisions
+		for (auto e=0; e<entities.length; e++) {// Length may change during iteration.
+			if (e != entities.length-1)
+				handleEntity(e);// May shorten entities.
+			finishEntity(e);
+		}
 	}
 }
 
@@ -198,8 +258,16 @@ struct Collision {
 }
 
 
-auto velTo(Entity entity, float at) {
-	return entity.vel * cast(long) ((at - entity.playAhead) * 65536) / 65536;
+WorldVel velTo(Entity entity, float at) {
+	return (
+		entity.vel
+		* (cast(long) (
+			(at - entity.playAhead)
+			* pow(2, cast(long) int.sizeof * 8)// Shift such that a value of 1 simply bit shifts entity.vel 4 bytes (into the extra 4 bytes of a long).
+		))
+		/ pow(2, cast(long) int.sizeof * 8)
+		////>> int.sizeof*8// Does not work on Vec, overload should be added.
+	).castType!WorldVelT;
 }
 
 

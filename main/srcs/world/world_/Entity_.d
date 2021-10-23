@@ -10,12 +10,13 @@ import math.linear.vector;
 import math.linear.point;
 
 import world_.Entity_Object_;
+import world_.Physics_World_ : PhysicsOnlyEntity;
 
 public import world_.entity_.Types_;
 public import world_.entity_.Physical_State_;
 public import world_.entity_.Conv_;
 
-class Entity {
+class Entity : PhysicsOnlyEntity {
 	union {
 		Physical physical;
 		struct {
@@ -31,7 +32,6 @@ class Entity {
 	
 	WorldPos[] trajectory;
 	
-	float playAhead = 0.0; // The % of the tick position has been updated for (used in the physics loop).
 	Entity[]	collisions	= [];
 	
 	bool	alive	= true;
