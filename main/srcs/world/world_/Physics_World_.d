@@ -10,6 +10,13 @@ import math.linear.vector;
 import math.linear.point;
 import math.geometry.line;
 
+/// Data used within the physics update, invalid anytime else.
+abstract class PhysicsOnlyEntity {
+	package(world_):
+	
+	float playAhead = 0.0; // The % of the tick position has been updated to.
+}
+
 class PhysicsWorld {
 	Entity[] entities;
 	Entity[] gravityWells;
