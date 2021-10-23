@@ -15,7 +15,31 @@ abstract class PhysicsOnlyEntity {
 	package(world_):
 	
 	float playAhead = 0.0; // The % of the tick position has been updated to.
+	
+	WorldPosT left;
+	WorldPosT right;
+	WorldPosT bottom;
+	WorldPosT top;
 }
+
+void setEdges(Entity entity) { with(entity) {
+	if (vel.x >= 0) {
+		left = pos.x - object.broadRadius;
+		right = pos.x + vel.x + object.broadRadius;
+	}
+	else {
+		left = pos.x + vel.x - object.broadRadius;
+		right = pos.x + object.broadRadius;
+	}
+	if (vel.y >= 0) {
+		bottom = pos.y - object.broadRadius;
+		top = pos.y + vel.y + object.broadRadius;
+	}
+	else {
+		bottom = pos.y + vel.y - object.broadRadius;
+		top = pos.y + object.broadRadius;
+	}
+}}
 
 class PhysicsWorld {
 	Entity[] entities;
@@ -30,16 +54,16 @@ class PhysicsWorld {
 		if (entities.length == 0) return;
 		
 		void sweep(size_t e) {
-			if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius) {
-				Entity entity = entities[e];
+			Entity entity = entities[e];
+			if (entity.left < entities[e-1].right) {
 				do {
 					entities[e] = entities[e-1];
 					e--;
-				} while (e > 0 && entity.pos.x + min(0, entity.vel.x) - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius);
+				} while (e > 0 && entity.left < entities[e-1].right);
 				entities[e] = entity;
 			}
 		}
-		/// returns new location of e
+		/// Return new `e` (where `entities[e]` was moved to).
 		size_t resort(size_t e) {
 			auto entity = entities[e];
 			size_t o;
@@ -142,6 +166,7 @@ class PhysicsWorld {
 			
 			//---Setup
 			entities[e].playAhead = 0;
+			entities[e].setEdges;
 		}
 		
 		void finishEntity(size_t e) {
