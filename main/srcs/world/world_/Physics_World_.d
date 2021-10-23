@@ -29,16 +29,14 @@ class PhysicsWorld {
 	void update() {
 		if (entities.length == 0) return;
 		
-		void sweep() {
-			foreach (e; 1 .. entities.length) {
-				if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius) {
-					Entity entity = entities[e];
-					do {
-						entities[e] = entities[e-1];
-						e--;
-					} while (e > 0 && entity.pos.x + min(0, entity.vel.x) - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius);
-					entities[e] = entity;
-				}
+		void sweep(size_t e) {
+			if (e > 0 && entities[e].pos.x + min(0, entities[e].vel.x) - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius) {
+				Entity entity = entities[e];
+				do {
+					entities[e] = entities[e-1];
+					e--;
+				} while (e > 0 && entity.pos.x + min(0, entity.vel.x) - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].vel.x) - entities[e-1].object.broadRadius);
+				entities[e] = entity;
 			}
 		}
 		/// returns new location of e
@@ -134,7 +132,16 @@ class PhysicsWorld {
 		}
 		
 		void startEntity(size_t e) {
+			//---Reset
 			entities[e].collisions = [];
+			
+			//////---Gravity
+			////foreach (w; gravityWells) {
+			////	entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
+			////}
+			
+			//---Setup
+			entities[e].playAhead = 0;
 		}
 		
 		void finishEntity(size_t e) {
@@ -155,18 +162,18 @@ class PhysicsWorld {
 		}
 		
 		//---Sweep
-		sweep;
-		
-		//---Collisions
-		for (auto e=0; e<entities.length; e++) {
+		foreach (e; 0..entities.length) {
 			startEntity(e);
-			if (e != entities.length-1)
-				handleEntity(e);
-			finishEntity(e);
+			if (e != 0)
+				sweep(e);
 		}
 		
-		//---Reset
-		entities.each!(e=>e.playAhead=0);
+		//---Collisions
+		for (auto e=0; e<entities.length; e++) {// Length may change during iteration.
+			if (e != entities.length-1)
+				handleEntity(e);// May shorten entities.
+			finishEntity(e);
+		}
 	}
 }
 
