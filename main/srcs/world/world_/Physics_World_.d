@@ -23,6 +23,7 @@ abstract class PhysicsOnlyEntity {
 }
 
 void setEdges(Entity entity) { with(entity) {
+	assert(playAhead == 0);
 	if (vel.x >= 0) {
 		left = pos.x - object.broadRadius;
 		right = pos.x + vel.x + object.broadRadius;
@@ -37,6 +38,32 @@ void setEdges(Entity entity) { with(entity) {
 	}
 	else {
 		bottom = pos.y + vel.y - object.broadRadius;
+		top = pos.y + object.broadRadius;
+	}
+}}
+void setEdges1(Entity entity) { with(entity) {
+	assert(playAhead == 1);
+	left = pos.x - object.broadRadius;
+	right = pos.x + object.broadRadius;
+	bottom = pos.y - object.broadRadius;
+	top = pos.y + object.broadRadius;
+}}
+void setEdgesPlayAhead(Entity entity) { with(entity) {
+	auto workingVel = entity.velTo(1);
+	if (workingVel.x >= 0) {
+		left = pos.x - object.broadRadius;
+		right = pos.x + workingVel.x + object.broadRadius;
+	}
+	else {
+		left = pos.x + workingVel.x - object.broadRadius;
+		right = pos.x + object.broadRadius;
+	}
+	if (workingVel.y >= 0) {
+		bottom = pos.y - object.broadRadius;
+		top = pos.y + workingVel.y + object.broadRadius;
+	}
+	else {
+		bottom = pos.y + workingVel.y - object.broadRadius;
 		top = pos.y + object.broadRadius;
 	}
 }}
@@ -67,18 +94,18 @@ class PhysicsWorld {
 		size_t resort(size_t e) {
 			auto entity = entities[e];
 			size_t o;
-			if (e < entities.length-1 && entities[e].pos.x + min(0, entities[e].velTo(1).x)  - entities[e].object.broadRadius > entities[e+1].pos.x + min(0, entities[e+1].velTo(1).x)  - entities[e+1].object.broadRadius) {
+			if (e < entities.length-1 && entities[e].left > entities[e+1].left) {
 				do {
 					entities[e] = entities[e+1];
 					e++;
-				} while (e < entities.length-1 && entity.pos.x + min(0, entity.velTo(1).y)  - entity.object.broadRadius > entities[e+1].pos.x + min(0, entities[e+1].velTo(1).x)  - entities[e+1].object.broadRadius);
+				} while (e < entities.length-1 && entities[e].left > entities[e+1].left);
 				entities[e] = entity;
 			}
-			else if (e > 0 && entities[e].pos.x + min(0, entities[e].velTo(1).y)  - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].velTo(1).x) - entities[e-1].object.broadRadius) {
+			else if (e > 0 && entities[e].left < entities[e-1].left) {
 				do {
 					entities[e] = entities[e-1];
 					e--;
-				} while (e > 0 && entity.pos.x + min(0, entity.velTo(1).y)  - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].velTo(1).x) - entities[e-1].object.broadRadius);
+				} while (e > 0 && entities[e].left < entities[e-1].left);
 				entities[e] = entity;
 			}
 			return e;
@@ -89,10 +116,9 @@ class PhysicsWorld {
 			//---Find Collisions
 			Collision*[] collisions = [];
 			{
-				auto until = entities[e].pos.x + max(0, entities[e].vel.x) + entities[e].object.broadRadius;
 				bool broke = false;
 				foreach (o; e+1 .. entities.length) {
-					if (until < entities[o].pos.x + min(0, entities[o].vel.x) - entities[o].object.broadRadius)
+					if (entities[e].right < entities[o].left)
 						break;
 					auto colTime = collisionTime(entities[e], entities[o]);// colTime will be greater (or equal?) than either entities playAhead
 					if (colTime >= 0 && colTime < upTo)
@@ -109,9 +135,8 @@ class PhysicsWorld {
 				//---Handle Any Earlier Collision Of Other Entities
 				bool anythingHappened = false;
 				{
-					auto until = entities[col.o].pos.x + max(0, entities[col.o].vel.x) + entities[col.o].object.broadRadius;
 					foreach (i; e+1 .. entities.length) {
-						if (until < entities[i].pos.x + min(0, entities[i].vel.x) - entities[i].object.broadRadius)
+						if (entities[col.o].right < entities[i].left)
 							break;
 						anythingHappened = anythingHappened || handleEntity(i, col.at);
 					}
@@ -122,8 +147,8 @@ class PhysicsWorld {
 					//---Enact Collision
 					entities[e].pos += entities[e].velTo(col.at);
 					entities[col.o].pos += entities[col.o].velTo(col.at);
-					entities[e].playAhead = col.at;
-					entities[col.o].playAhead = col.at;
+					entities[e].playAhead = col.at;	entities[e].setEdgesPlayAhead;
+					entities[col.o].playAhead = col.at;	entities[col.o].setEdgesPlayAhead;
 					//---Collision Resolution
 					entities[e].vel = vec([0,0]);
 					entities[col.o].vel = vec([0,0]);
@@ -165,13 +190,12 @@ class PhysicsWorld {
 			}
 			
 			//---Setup
-			entities[e].playAhead = 0;
-			entities[e].setEdges;
+			entities[e].playAhead = 0;	entities[e].setEdges;
 		}
 		
 		void finishEntity(size_t e) {
 			entities[e].pos += entities[e].velTo(1);
-			entities[e].playAhead = 1;
+			entities[e].playAhead = 1;	entities[e].setEdges1;
 			entities[e].ori += entities[e].anv + entities[e].ana/2;
 			entities[e].anv += entities[e].ana;
 			entities[e].ana = 0;
