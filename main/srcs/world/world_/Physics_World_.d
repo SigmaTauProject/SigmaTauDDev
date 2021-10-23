@@ -234,8 +234,16 @@ struct Collision {
 }
 
 
-auto velTo(Entity entity, float at) {
-	return entity.vel * cast(long) ((at - entity.playAhead) * 65536) / 65536;
+WorldVel velTo(Entity entity, float at) {
+	return (
+		entity.vel
+		* (cast(long) (
+			(at - entity.playAhead)
+			* pow(2, cast(long) int.sizeof * 8)// Shift such that a value of 1 simply bit shifts entity.vel 4 bytes (into the extra 4 bytes of a long).
+		))
+		/ pow(2, cast(long) int.sizeof * 8)
+		////>> int.sizeof*8// Does not work on Vec, overload should be added.
+	).castType!WorldVelT;
 }
 
 
