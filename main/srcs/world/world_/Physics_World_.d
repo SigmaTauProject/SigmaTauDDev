@@ -67,18 +67,18 @@ class PhysicsWorld {
 		size_t resort(size_t e) {
 			auto entity = entities[e];
 			size_t o;
-			if (e < entities.length-1 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].object.broadRadius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].object.broadRadius) {
+			if (e < entities.length-1 && entities[e].pos.x + min(0, entities[e].velTo(1).x)  - entities[e].object.broadRadius > entities[e+1].pos.x + min(0, entities[e+1].velTo(1).x)  - entities[e+1].object.broadRadius) {
 				do {
 					entities[e] = entities[e+1];
 					e++;
-				} while (e < entities.length-1 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.object.broadRadius > entities[e+1].pos.x + min(0, (entities[e+1].vel.x * (1 - entities[e+1].playAhead) * 65536) / 65536)  - entities[e+1].object.broadRadius);
+				} while (e < entities.length-1 && entity.pos.x + min(0, entity.velTo(1).y)  - entity.object.broadRadius > entities[e+1].pos.x + min(0, entities[e+1].velTo(1).x)  - entities[e+1].object.broadRadius);
 				entities[e] = entity;
 			}
-			else if (e > 0 && entities[e].pos.x + min(0, (entities[e].vel.x * (1 - entities[e].playAhead) * 65536) / 65536)  - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].object.broadRadius) {
+			else if (e > 0 && entities[e].pos.x + min(0, entities[e].velTo(1).y)  - entities[e].object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].velTo(1).x) - entities[e-1].object.broadRadius) {
 				do {
 					entities[e] = entities[e-1];
 					e--;
-				} while (e > 0 && entity.pos.x + min(0, (entity.vel.x * (1 - entity.playAhead) * 65536) / 65536)  - entity.object.broadRadius < entities[e-1].pos.x + min(0, (entities[e-1].vel.x * (1 - entities[e-1].playAhead) * 65536) / 65536) - entities[e-1].object.broadRadius);
+				} while (e > 0 && entity.pos.x + min(0, entity.velTo(1).y)  - entity.object.broadRadius < entities[e-1].pos.x + min(0, entities[e-1].velTo(1).x) - entities[e-1].object.broadRadius);
 				entities[e] = entity;
 			}
 			return e;
@@ -170,7 +170,7 @@ class PhysicsWorld {
 		}
 		
 		void finishEntity(size_t e) {
-			entities[e].pos += entities[e].vel * cast(long) ((1 - entities[e].playAhead) * 65536) / 65536;
+			entities[e].pos += entities[e].velTo(1);
 			entities[e].playAhead = 1;
 			entities[e].ori += entities[e].anv + entities[e].ana/2;
 			entities[e].anv += entities[e].ana;
