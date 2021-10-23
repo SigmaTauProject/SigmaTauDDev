@@ -135,10 +135,10 @@ class PhysicsWorld {
 			//---Reset
 			entities[e].collisions = [];
 			
-			//////---Gravity
-			////foreach (w; gravityWells) {
-			////	entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
-			////}
+			//---Gravity
+			foreach (w; gravityWells) {
+				entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
+			}
 			
 			//---Setup
 			entities[e].playAhead = 0;
@@ -150,9 +150,6 @@ class PhysicsWorld {
 			entities[e].ori += entities[e].anv + entities[e].ana/2;
 			entities[e].anv += entities[e].ana;
 			entities[e].ana = 0;
-			foreach (w; gravityWells) {
-				entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
-			}
 			if (entities[e].trajectory.length) {
 				if (entities[e].trajectory[0] == entities[e].pos)
 					entities[e].trajectory = entities[e].trajectory[1..$];
