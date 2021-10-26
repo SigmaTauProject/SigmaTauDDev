@@ -186,7 +186,7 @@ class PhysicsWorld {
 			
 			//---Gravity
 			foreach (w; gravityWells) {
-				entities[e].applyWorldImpulseCentered(gravitationalPull(entities[e], w));
+				entities[e].applyWorldVelocityCentered(gravitationalVelocity(entities[e], w));
 			}
 			
 			//---Setup

@@ -53,16 +53,21 @@ class Entity : PhysicsOnlyEntity {
 
 WorldPos[] traject(Entity entity, Entity[] gravityWells, size_t steps) {
 	foreach(i; entity.trajectory.length..steps) {
-		WorldPos pos = entity.pos;
-		WorldVel vel = entity.vel;
-		if (i > 0) {
+		WorldPos pos;
+		WorldVel vel;
+		if (i==0) {
+			pos = entity.pos;
+			vel = entity.vel;
+		}
+		else if (i == 1) {
 			pos = entity.trajectory[i-1];
 			vel = (entity.trajectory[i-1] - entity.pos).castType!WorldVelT;
 		}
-		if (i > 1) {
+		else {
+			pos = entity.trajectory[i-1];
 			vel = (entity.trajectory[i-1] - entity.trajectory[i-2]).castType!WorldVelT;
 		}
-		entity.trajectory ~= pos+vel+sum(gravityWells.map!(w=>(gravitationalPull(pos, entity.object, w) / entity.object.mass).fromRelT!WorldVelT));
+		entity.trajectory ~= pos+vel+sum(gravityWells.map!(w=>gravitationalVelocity(pos, entity.object, w)));
 	}
 	return entity.trajectory[0..steps];
 }
@@ -80,6 +85,19 @@ Imp gravitationalPull(WorldPos pos, EntityObject object, Entity gravityWell) {
 		)
 		.map!(a=>a.isNaN||a.isInfinity?0:a);
 }
+WorldVel gravitationalVelocity(Entity entity, Entity gravityWell) {
+	return gravitationalVelocity(entity.pos, entity.object, gravityWell);
+}
+WorldVel gravitationalVelocity(WorldPos pos, EntityObject object, Entity gravityWell) {
+	return	( 0.0001f
+		* (cast(float) pow(gravityWell.object.mass +1, 3) -1)
+		/ (cast(float) pow(distance(gravityWell.pos.toRelT, pos.toRelT), 2))
+		/ 65536f
+		* (gravityWell.pos - pos).castType!float.normalized
+		)
+		.map!(a=>a.isNaN||a.isInfinity?0:a)
+		.fromRelT!WorldVelT;
+}
 
 void applyWorldImpulseCentered(Entity entity, Imp impulse) {
 	entity.vel += (impulse / entity.object.mass).fromRelT!WorldVelT;
@@ -90,6 +108,10 @@ void applyWorldImpulseAngular(Entity entity, Ani impulse) {
 void applyWorldImpulse(Entity entity, Imp impulse, RelPos pos) {
 	entity.applyWorldImpulseCentered(impulse);
 	entity.applyWorldImpulseAngular(cross(pos.vector, impulse));
+}
+
+void applyWorldVelocityCentered(Entity entity, WorldVel vel) {
+	entity.vel += vel;
 }
 
 
