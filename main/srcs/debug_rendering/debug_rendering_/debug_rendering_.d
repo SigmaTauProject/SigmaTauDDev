@@ -9,6 +9,8 @@ import world_;
 import math.linear.vector;
 import math.linear.point;
 
+import updaterate_;
+
 class DebugRendering {
 	Window* window;
 	Renderer* renderer;
@@ -39,6 +41,8 @@ class DebugRendering {
 	int[2] renderSize;
 	
 	World world;
+	
+	bool paused;
 	
 	this(World world) {
 		this.world = world;
@@ -80,6 +84,25 @@ class DebugRendering {
 						import std.stdio;
 						writeln(world.physicsWorld.entities.length);
 					}
+					else if (event.key.keysym.sym == SDLK_p) {
+						paused = !paused;
+						import std.stdio;
+						writeln(paused?"paused":"unpaused");
+					}
+					else if (event.key.keysym.sym == SDLK_s) {
+						if (paused)
+							return;
+					}
+					else if (event.key.keysym.sym == SDLK_UP) {
+						updaterate = updaterate*2/3;
+						import std.stdio;
+						writeln(updaterate);
+					}
+					else if (event.key.keysym.sym == SDLK_DOWN) {
+						updaterate = updaterate*3/2;
+						import std.stdio;
+						writeln(updaterate);
+					}
 				}
 				viewer.event(event);
 			}
@@ -101,6 +124,9 @@ class DebugRendering {
 		}
 		
 		renderer.renderPresent;
+		
+		if (paused)
+			update;
 	}
 	
 	void drawSpot(WorldPos p, int size) {

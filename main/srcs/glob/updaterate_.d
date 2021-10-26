@@ -1,3 +1,3 @@
 import core.time;
 
-enum updaterate = 100.msecs;
+auto updaterate = 100.msecs;
