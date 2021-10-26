@@ -55,10 +55,13 @@ WorldPos[] traject(Entity entity, Entity[] gravityWells, size_t steps) {
 	foreach(i; entity.trajectory.length..steps) {
 		WorldPos pos = entity.pos;
 		WorldVel vel = entity.vel;
-		if (i > 0)
+		if (i > 0) {
 			pos = entity.trajectory[i-1];
-		if (i > 1)
+			vel = (entity.trajectory[i-1] - entity.pos).castType!WorldVelT;
+		}
+		if (i > 1) {
 			vel = (entity.trajectory[i-1] - entity.trajectory[i-2]).castType!WorldVelT;
+		}
 		entity.trajectory ~= pos+vel+sum(gravityWells.map!(w=>(gravitationalPull(pos, entity.object, w) / entity.object.mass).fromRelT!WorldVelT));
 	}
 	return entity.trajectory[0..steps];
