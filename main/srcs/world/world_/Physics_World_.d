@@ -240,14 +240,17 @@ float collisionTime(Vec!(float,2) oPos, Vec!(float,2) vel, float r, float playAh
 	
 	if (x > r)
 		return -1;
+	
 	float ans;
 	if (x == r)
 		ans = y;
 	else
 		ans = y - sqrt(pow(r, 2) - pow(x, 2));
 	ans /= vel.magnitude;
-	if (ans >= 1 || ans < playAhead)
+	
+	if (ans < playAhead)
 		return -1;
+	
 	assert(!ans.isNaN);
 	return ans;
 }
