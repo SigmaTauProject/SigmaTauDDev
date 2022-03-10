@@ -15,6 +15,7 @@ class World {
 	PhysicsWorld physicsWorld;
 	Entity[] newEntities = [];
 	Entity[] nextEntities = [];
+	int simulationSpeed = 1;
 	
 	this() {
 		physicsWorld = new PhysicsWorld;
@@ -37,7 +38,8 @@ class World {
 		nextEntities.length = 0;
 		nextEntities.assumeSafeAppend;
 		
-		physicsWorld.update;
+		foreach (_; 0..simulationSpeed)
+			physicsWorld.update;
 	}
 	
 	void addEntity(Entity entity) {

@@ -42,8 +42,8 @@ void main() {
 		auto startTime = MonoTime.currTime;
 		
 		world.update();
-		ships.each!(ship=>ship.update());
 		debugRendering.update();
+		ships.each!(ship=>ship.update());
 		
 		Thread.sleep(max(0.msecs, updaterate - (MonoTime.currTime - startTime)));
 		////if (readln()=="q")

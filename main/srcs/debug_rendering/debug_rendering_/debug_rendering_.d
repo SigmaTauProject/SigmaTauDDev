@@ -56,11 +56,8 @@ class DebugRendering {
 					zoom *= 2/3f;
 				}
 			}
-			else if (event.type == mousemotion) {
-				if (event.motion.state & buttonLmask) {
-					view.pos.x -= event.motion.xrel/zoom*2;
-					view.pos.y -= event.motion.yrel/zoom*2;
-				}
+			else if (event.type == mousemotion && event.motion.state & buttonRmask) {
+				pos -= vec(event.motion.xrel, event.motion.yrel)/view.zoom*2;
 			}
 		}
 		
@@ -73,17 +70,34 @@ class DebugRendering {
 	}
 	class Selector {
 		Entity[] selected;
+		bool onEntity = false;
 		void event(Event event) {
-			if (event.type == mousebuttondown) {
+			if (event.type == mousebuttondown && event.motion.state & buttonLmask) {
 				selected.length = 0;  selected.assumeSafeAppend;
 				auto pos = view.fromScreenPos(pvec(event.button.x, event.button.y));
 				foreach (entity; world.physicsWorld.entities) {
 					auto r = max(2, cast(int)(entity.object.broadRadius*0.7));
-					if (pos.x >= entity.pos.x-r && pos.x <= entity.pos.x+r && pos.y >= entity.pos.y-r && pos.y <= entity.pos.y+r) {
+					const padding = 2/view.zoom;
+					if (pos.x >= entity.pos.x-r-padding && pos.x <= entity.pos.x+r+padding && pos.y >= entity.pos.y-r-padding && pos.y <= entity.pos.y+r+padding) {
 						writeln(entity);
 						selected ~= entity;
+						onEntity = true;
 					}
 				}
+			}
+			else if (event.type == mousemotion && event.motion.state & buttonLmask) {
+				if (onEntity) {
+					foreach (entity; selected) {
+						if (getKeyboardState(null)[getScancodeFromKey(SDLK_a)])
+							entity.vel += (vec(event.motion.xrel, event.motion.yrel)/view.zoom).castType!WorldPosT / 64;
+						else
+							entity.pos += (vec(event.motion.xrel, event.motion.yrel)/view.zoom).castType!WorldPosT;
+						entity.trajectory.length = 0;
+					}
+				}
+			}
+			else if (event.type == mousebuttonup && event.motion.state & buttonLmask) {
+				onEntity = false;
 			}
 		}
 	}
@@ -91,8 +105,6 @@ class DebugRendering {
 	Vec2!int renderSize;
 	
 	World world;
-	
-	bool paused;
 	
 	this(World world) {
 		this.world = world;
@@ -120,10 +132,10 @@ class DebugRendering {
 	void update() {
 		for (Event event; pollEvent(&event);) {
 			if (event.type == cast(SDL_EventType) EventType.quit) {
+				window.destroyWindow;
 			}
 			else if (event.type == windowevent) {
 				if (event.window.event == windoweventResized) {
-					window.setWindowSize(event.window.data1, event.window.data2);
 					renderer.getRendererOutputSize(&renderSize.x,&renderSize.y);
 				}
 			}
@@ -134,13 +146,17 @@ class DebugRendering {
 						writeln(world.physicsWorld.entities.length);
 					}
 					else if (event.key.keysym.sym == SDLK_p) {
-						paused = !paused;
-						import std.stdio;
-						writeln(paused?"paused":"unpaused");
+						world.simulationSpeed = !world.simulationSpeed;
+					}
+					else if (event.key.keysym.sym == SDLK_n) {
+						world.simulationSpeed++;
+					}
+					else if (event.key.keysym.sym == SDLK_h) {
+						world.simulationSpeed--;
 					}
 					else if (event.key.keysym.sym == SDLK_s) {
-						if (paused)
-							return;
+						if (!world.simulationSpeed)
+							world.physicsWorld.update;
 					}
 					else if (event.key.keysym.sym == SDLK_UP) {
 						updaterate = updaterate*2/3;
@@ -162,9 +178,10 @@ class DebugRendering {
 		renderer.renderClear;
 		
 		foreach (entity; world.physicsWorld.entities) {
+			bool selected = selector.selected.canFind(entity);
 			renderer.setRenderDrawColor(0,255,255, 255);
-			drawSpot(entity.pos, max(2, cast(int)(entity.object.broadRadius*view.zoom*1.4)), selector.selected.canFind(entity));
-			if (entity.object == fineShipObject) {
+			drawSpot(entity.pos, max(2, cast(int)(entity.object.broadRadius*view.zoom*1.4)), selected);
+			if (selected) {
 				////import std.stdio; if (entity.trajectory.length == 0) writeln("Fully recreating trajectory!");
 				foreach_reverse (i,traj; entity.traject(world.physicsWorld.gravityWells, 16*16*16)) {
 					renderer.setRenderDrawColor(cast(ubyte)max(16,min(255*2 - cast(long)i/2, 255)),cast(ubyte)max(0,255 - cast(long)i/2),0, 255);
@@ -174,9 +191,6 @@ class DebugRendering {
 		}
 		
 		renderer.renderPresent;
-		
-		if (paused)
-			update;
 	}
 	
 	void drawSpot(WorldPos pos, int size, bool fill=false) {
